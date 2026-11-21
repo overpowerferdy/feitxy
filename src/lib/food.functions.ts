@@ -21,4 +21,4 @@ export const analyzeFood = (data: {
   image: string;
   note?: string;
 }) => 
-  apiCall<FoodAnalysis>("/api/food.analyzeFood", data);
+  apiCall<FoodAnalysis>("/api/food/analyze-food", data);

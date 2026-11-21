@@ -14,4 +14,4 @@ export const reviewLogs = (data: {
   today: string;
   logs: string;
 }) => 
-  apiCall<CoachReview>("/api/coach.reviewLogs", data);
+  apiCall<CoachReview>("/api/coach/review-logs", data);

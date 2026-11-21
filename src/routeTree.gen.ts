@@ -19,6 +19,11 @@ import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as WellnessRouteImport } from './routes/wellness'
 import { Route as WorkoutsRouteImport } from './routes/workouts'
 import { Route as LearnDayRouteImport } from './routes/learn.$day'
+import { Route as ApiCoachReviewLogsRouteImport } from './routes/api/coach/review-logs'
+import { Route as ApiFoodAnalyzeFoodRouteImport } from './routes/api/food/analyze-food'
+import { Route as ApiLearnGenerateLessonRouteImport } from './routes/api/learn/generate-lesson'
+import { Route as ApiLearnGenerateProjectRouteImport } from './routes/api/learn/generate-project'
+import { Route as ApiLearnReviewCodeRouteImport } from './routes/api/learn/review-code'
 import { Route as ApiPublicJobsRoutineRemindersRouteImport } from './routes/api/public/jobs/routine-reminders'
 
 const IndexRoute = IndexRouteImport.update({
@@ -71,6 +76,31 @@ const LearnDayRoute = LearnDayRouteImport.update({
   path: '/learn/$day',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiCoachReviewLogsRoute = ApiCoachReviewLogsRouteImport.update({
+  id: '/api/coach/review-logs',
+  path: '/api/coach/review-logs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiFoodAnalyzeFoodRoute = ApiFoodAnalyzeFoodRouteImport.update({
+  id: '/api/food/analyze-food',
+  path: '/api/food/analyze-food',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiLearnGenerateLessonRoute = ApiLearnGenerateLessonRouteImport.update({
+  id: '/api/learn/generate-lesson',
+  path: '/api/learn/generate-lesson',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiLearnGenerateProjectRoute = ApiLearnGenerateProjectRouteImport.update({
+  id: '/api/learn/generate-project',
+  path: '/api/learn/generate-project',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiLearnReviewCodeRoute = ApiLearnReviewCodeRouteImport.update({
+  id: '/api/learn/review-code',
+  path: '/api/learn/review-code',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicJobsRoutineRemindersRoute =
   ApiPublicJobsRoutineRemindersRouteImport.update({
     id: '/api/public/jobs/routine-reminders',
@@ -89,6 +119,11 @@ export interface FileRoutesByFullPath {
   '/wellness': typeof WellnessRoute
   '/workouts': typeof WorkoutsRoute
   '/learn/$day': typeof LearnDayRoute
+  '/api/coach/review-logs': typeof ApiCoachReviewLogsRoute
+  '/api/food/analyze-food': typeof ApiFoodAnalyzeFoodRoute
+  '/api/learn/generate-lesson': typeof ApiLearnGenerateLessonRoute
+  '/api/learn/generate-project': typeof ApiLearnGenerateProjectRoute
+  '/api/learn/review-code': typeof ApiLearnReviewCodeRoute
   '/api/public/jobs/routine-reminders': typeof ApiPublicJobsRoutineRemindersRoute
 }
 export interface FileRoutesByTo {
@@ -102,6 +137,11 @@ export interface FileRoutesByTo {
   '/wellness': typeof WellnessRoute
   '/workouts': typeof WorkoutsRoute
   '/learn/$day': typeof LearnDayRoute
+  '/api/coach/review-logs': typeof ApiCoachReviewLogsRoute
+  '/api/food/analyze-food': typeof ApiFoodAnalyzeFoodRoute
+  '/api/learn/generate-lesson': typeof ApiLearnGenerateLessonRoute
+  '/api/learn/generate-project': typeof ApiLearnGenerateProjectRoute
+  '/api/learn/review-code': typeof ApiLearnReviewCodeRoute
   '/api/public/jobs/routine-reminders': typeof ApiPublicJobsRoutineRemindersRoute
 }
 export interface FileRoutesById {
@@ -116,6 +156,11 @@ export interface FileRoutesById {
   '/wellness': typeof WellnessRoute
   '/workouts': typeof WorkoutsRoute
   '/learn/$day': typeof LearnDayRoute
+  '/api/coach/review-logs': typeof ApiCoachReviewLogsRoute
+  '/api/food/analyze-food': typeof ApiFoodAnalyzeFoodRoute
+  '/api/learn/generate-lesson': typeof ApiLearnGenerateLessonRoute
+  '/api/learn/generate-project': typeof ApiLearnGenerateProjectRoute
+  '/api/learn/review-code': typeof ApiLearnReviewCodeRoute
   '/api/public/jobs/routine-reminders': typeof ApiPublicJobsRoutineRemindersRoute
 }
 export interface FileRouteTypes {
@@ -131,6 +176,11 @@ export interface FileRouteTypes {
     | '/wellness'
     | '/workouts'
     | '/learn/$day'
+    | '/api/coach/review-logs'
+    | '/api/food/analyze-food'
+    | '/api/learn/generate-lesson'
+    | '/api/learn/generate-project'
+    | '/api/learn/review-code'
     | '/api/public/jobs/routine-reminders'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -144,6 +194,11 @@ export interface FileRouteTypes {
     | '/wellness'
     | '/workouts'
     | '/learn/$day'
+    | '/api/coach/review-logs'
+    | '/api/food/analyze-food'
+    | '/api/learn/generate-lesson'
+    | '/api/learn/generate-project'
+    | '/api/learn/review-code'
     | '/api/public/jobs/routine-reminders'
   id:
     | '__root__'
@@ -157,6 +212,11 @@ export interface FileRouteTypes {
     | '/wellness'
     | '/workouts'
     | '/learn/$day'
+    | '/api/coach/review-logs'
+    | '/api/food/analyze-food'
+    | '/api/learn/generate-lesson'
+    | '/api/learn/generate-project'
+    | '/api/learn/review-code'
     | '/api/public/jobs/routine-reminders'
   fileRoutesById: FileRoutesById
 }
@@ -171,6 +231,11 @@ export interface RootRouteChildren {
   WellnessRoute: typeof WellnessRoute
   WorkoutsRoute: typeof WorkoutsRoute
   LearnDayRoute: typeof LearnDayRoute
+  ApiCoachReviewLogsRoute: typeof ApiCoachReviewLogsRoute
+  ApiFoodAnalyzeFoodRoute: typeof ApiFoodAnalyzeFoodRoute
+  ApiLearnGenerateLessonRoute: typeof ApiLearnGenerateLessonRoute
+  ApiLearnGenerateProjectRoute: typeof ApiLearnGenerateProjectRoute
+  ApiLearnReviewCodeRoute: typeof ApiLearnReviewCodeRoute
   ApiPublicJobsRoutineRemindersRoute: typeof ApiPublicJobsRoutineRemindersRoute
 }
 
@@ -246,6 +311,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LearnDayRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/coach/review-logs': {
+      id: '/api/coach/review-logs'
+      path: '/api/coach/review-logs'
+      fullPath: '/api/coach/review-logs'
+      preLoaderRoute: typeof ApiCoachReviewLogsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/food/analyze-food': {
+      id: '/api/food/analyze-food'
+      path: '/api/food/analyze-food'
+      fullPath: '/api/food/analyze-food'
+      preLoaderRoute: typeof ApiFoodAnalyzeFoodRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/learn/generate-lesson': {
+      id: '/api/learn/generate-lesson'
+      path: '/api/learn/generate-lesson'
+      fullPath: '/api/learn/generate-lesson'
+      preLoaderRoute: typeof ApiLearnGenerateLessonRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/learn/generate-project': {
+      id: '/api/learn/generate-project'
+      path: '/api/learn/generate-project'
+      fullPath: '/api/learn/generate-project'
+      preLoaderRoute: typeof ApiLearnGenerateProjectRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/learn/review-code': {
+      id: '/api/learn/review-code'
+      path: '/api/learn/review-code'
+      fullPath: '/api/learn/review-code'
+      preLoaderRoute: typeof ApiLearnReviewCodeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/jobs/routine-reminders': {
       id: '/api/public/jobs/routine-reminders'
       path: '/api/public/jobs/routine-reminders'
@@ -267,6 +367,11 @@ const rootRouteChildren: RootRouteChildren = {
   WellnessRoute: WellnessRoute,
   WorkoutsRoute: WorkoutsRoute,
   LearnDayRoute: LearnDayRoute,
+  ApiCoachReviewLogsRoute: ApiCoachReviewLogsRoute,
+  ApiFoodAnalyzeFoodRoute: ApiFoodAnalyzeFoodRoute,
+  ApiLearnGenerateLessonRoute: ApiLearnGenerateLessonRoute,
+  ApiLearnGenerateProjectRoute: ApiLearnGenerateProjectRoute,
+  ApiLearnReviewCodeRoute: ApiLearnReviewCodeRoute,
   ApiPublicJobsRoutineRemindersRoute: ApiPublicJobsRoutineRemindersRoute,
 }
 export const routeTree = rootRouteImport
