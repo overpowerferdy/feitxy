@@ -42,23 +42,28 @@ jobs:
     - name: Build web application
       run: |
         npm run build
+        echo "Checking build output..."
         ls -la
-        ls -la dist || echo "No dist folder found"
-        ls -la .output || echo "No .output folder found"
+        if [ -d "dist" ]; then
+          echo "✅ Found dist directory"
+          ls -la dist/ | head -20
+        elif [ -d ".output/public" ]; then
+          echo "✅ Found .output/public directory"
+          ls -la .output/public/ | head -20
+          echo "Moving .output/public to dist..."
+          mkdir -p dist
+          cp -r .output/public/* dist/
+          echo "Dist directory contents:"
+          ls -la dist/ | head -20
+        else
+          echo "❌ Build output not found in expected locations"
+          echo "Searching for index.html..."
+          find . -name "index.html" -type f 2>/dev/null
+          exit 1
+        fi
     
     - name: Setup Capacitor Android platform
       run: |
-        # Check if dist exists, if not check .output
-        if [ -d "dist" ]; then
-          echo "Found dist directory"
-        elif [ -d ".output/public" ]; then
-          echo "Found .output/public, moving to dist"
-          mv .output/public dist
-        else
-          echo "Build output not found in expected locations"
-          find . -name "index.html" -type f
-          exit 1
-        fi
         npx cap add android || echo "Android platform already exists"
         npx cap sync android
     
