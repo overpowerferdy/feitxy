@@ -21,14 +21,6 @@ export default defineConfig({
       outDir: 'dist',
       sourcemap: false,
       minify: 'terser',
-      rollupOptions: {
-        output: {
-          manualChunks: {
-            'react-vendor': ['react', 'react-dom'],
-            'capacitor': ['@capacitor/core', '@capacitor/app'],
-          }
-        }
-      }
     },
     server: {
       port: 3000,
