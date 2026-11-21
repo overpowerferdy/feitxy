@@ -42,23 +42,27 @@ jobs:
     - name: Build web application
       run: |
         npm run build
-        echo "Checking build output..."
+        echo "Build completed, checking output..."
+        
+    - name: Prepare dist for Capacitor
+      run: |
+        echo "Current directory contents:"
         ls -la
-        if [ -d "dist" ]; then
-          echo "✅ Found dist directory"
-          ls -la dist/ | head -20
-        elif [ -d ".output/public" ]; then
-          echo "✅ Found .output/public directory"
-          ls -la .output/public/ | head -20
-          echo "Moving .output/public to dist..."
+        
+        # TanStack Start outputs to .output/public
+        if [ -d ".output/public" ]; then
+          echo "✅ Found .output/public, copying to dist..."
           mkdir -p dist
-          cp -r .output/public/* dist/
-          echo "Dist directory contents:"
-          ls -la dist/ | head -20
+          cp -rv .output/public/* dist/
+          echo "Dist contents:"
+          ls -la dist/
+          echo "Checking for index.html:"
+          test -f dist/index.html && echo "✅ index.html exists" || echo "❌ index.html missing"
+        elif [ -d "dist" ]; then
+          echo "✅ Dist directory already exists"
+          ls -la dist/
         else
-          echo "❌ Build output not found in expected locations"
-          echo "Searching for index.html..."
-          find . -name "index.html" -type f 2>/dev/null
+          echo "❌ No build output found"
           exit 1
         fi
     
