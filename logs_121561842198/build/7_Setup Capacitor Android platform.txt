@@ -1,0 +1,31 @@
+﻿2026-11-21T14:35:09.3377545Z ##[group]Run npx cap add android || echo "Android platform already exists"
+2026-11-21T14:35:09.3377974Z [36;1mnpx cap add android || echo "Android platform already exists"[0m
+2026-11-21T14:35:09.3378365Z [36;1mnpx cap sync android --deployment[0m
+2026-11-21T14:35:09.3400135Z shell: /usr/bin/bash -e {0}
+2026-11-21T14:35:09.3400373Z env:
+2026-11-21T14:35:09.3400627Z   JAVA_HOME: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.21-9/x64
+2026-11-21T14:35:09.3401020Z   JAVA_HOME_17_X64: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.21-9/x64
+2026-11-21T14:35:09.3401312Z ##[endgroup]
+2026-11-21T14:35:09.9792582Z ✔ Adding native android project in android in 25.00ms
+2026-11-21T14:35:09.9793077Z ✔ add in 25.53ms
+2026-11-21T14:35:10.0081925Z ✖ copy android - failed!
+2026-11-21T14:35:10.0097972Z [error] The web assets directory (./.output/public) must contain an index.html file.
+2026-11-21T14:35:10.0098569Z         It will be the entry point for the web portion of the Capacitor app.
+2026-11-21T14:35:10.0335697Z ✔ Updating Android plugins in 11.93ms
+2026-11-21T14:35:10.0339739Z [info] Found 10 Capacitor plugins for android:
+2026-11-21T14:35:10.0340386Z        @capacitor/app@6.0.3
+2026-11-21T14:35:10.0340683Z        @capacitor/device@6.0.3
+2026-11-21T14:35:10.0340972Z        @capacitor/geolocation@6.1.1
+2026-11-21T14:35:10.0341270Z        @capacitor/haptics@6.0.3
+2026-11-21T14:35:10.0341564Z        @capacitor/keyboard@6.0.4
+2026-11-21T14:35:10.0341807Z        @capacitor/local-notifications@6.1.3
+2026-11-21T14:35:10.0342055Z        @capacitor/network@6.0.4
+2026-11-21T14:35:10.0342295Z        @capacitor/push-notifications@6.0.5
+2026-11-21T14:35:10.0342544Z        @capacitor/splash-screen@6.0.4
+2026-11-21T14:35:10.0342775Z        @capacitor/status-bar@6.0.3
+2026-11-21T14:35:10.0495156Z ✖ update android - failed!
+2026-11-21T14:35:10.0561571Z [error] Error: ENOENT: no such file or directory, open '/home/runner/work/feitxy/feitxy/android/app/src/main/assets/capacitor.plugins.json'
+2026-11-21T14:35:10.0685443Z Android platform already exists
+2026-11-21T14:35:10.5859890Z [error] The web assets directory (./.output/public) must contain an index.html file.
+2026-11-21T14:35:10.5860593Z         It will be the entry point for the web portion of the Capacitor app.
+2026-11-21T14:35:10.5972131Z ##[error]Process completed with exit code 1.

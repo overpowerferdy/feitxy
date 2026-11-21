@@ -1,0 +1,294 @@
+﻿2026-11-21T14:35:05.9285714Z ##[group]Run npm run build
+2026-11-21T14:35:05.9285953Z [36;1mnpm run build[0m
+2026-11-21T14:35:05.9286142Z [36;1mecho "Build completed, checking output..."[0m
+2026-11-21T14:35:05.9286413Z [36;1mls -la .output/public/ || echo "No .output/public found"[0m
+2026-11-21T14:35:05.9305591Z shell: /usr/bin/bash -e {0}
+2026-11-21T14:35:05.9305802Z env:
+2026-11-21T14:35:05.9306034Z   JAVA_HOME: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.21-9/x64
+2026-11-21T14:35:05.9306374Z   JAVA_HOME_17_X64: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.21-9/x64
+2026-11-21T14:35:05.9306638Z ##[endgroup]
+2026-11-21T14:35:06.0068483Z 
+2026-11-21T14:35:06.0068822Z > build
+2026-11-21T14:35:06.0069032Z > vite build
+2026-11-21T14:35:06.0069134Z 
+2026-11-21T14:35:06.9097372Z [33mThe plugin "vite-tsconfig-paths" is detected. Vite now supports tsconfig paths resolution natively via the [1mresolve.tsconfigPaths[22m option. You can remove the plugin and set [1mresolve.tsconfigPaths: true[22m in your Vite config instead.[39m
+2026-11-21T14:35:07.0300541Z [36mvite v8.1.5 [32mbuilding client environment for production...[36m[39m
+2026-11-21T14:35:07.0422675Z [2K
+2026-11-21T14:35:07.4098036Z [33m[plugin tanstack-start-core::server-fn:client] /home/runner/work/feitxy/feitxy/src/lib/learn.functions.ts:37:31 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.[39m
+2026-11-21T14:35:07.4104047Z [33m[plugin tanstack-start-core::server-fn:client] /home/runner/work/feitxy/feitxy/src/lib/learn.functions.ts:51:27 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.[39m
+2026-11-21T14:35:07.4105545Z [33m[plugin tanstack-start-core::server-fn:client] /home/runner/work/feitxy/feitxy/src/lib/learn.functions.ts:65:32 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.[39m
+2026-11-21T14:35:07.6759230Z [33m[plugin tanstack-start-core::server-fn:client] /home/runner/work/feitxy/feitxy/src/lib/push.functions.ts:18:37 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.[39m
+2026-11-21T14:35:07.6760884Z [33m[plugin tanstack-start-core::server-fn:client] /home/runner/work/feitxy/feitxy/src/lib/push.functions.ts:36:39 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.[39m
+2026-11-21T14:35:07.6762366Z [33m[plugin tanstack-start-core::server-fn:client] /home/runner/work/feitxy/feitxy/src/lib/push.functions.ts:44:37 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.[39m
+2026-11-21T14:35:07.7010815Z [33m[plugin tanstack-start-core::server-fn:client] /home/runner/work/feitxy/feitxy/src/lib/food.functions.ts:38:28 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.[39m
+2026-11-21T14:35:07.7118200Z [33m[plugin tanstack-start-core::server-fn:client] /home/runner/work/feitxy/feitxy/src/lib/coach.functions.ts:13:27 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.[39m
+2026-11-21T14:35:07.7442040Z transforming...✓ 2414 modules transformed.
+2026-11-21T14:35:07.8753694Z rendering chunks...
+2026-11-21T14:35:08.0698287Z computing gzip size...
+2026-11-21T14:35:08.0767944Z .output/public/assets/plank-OMJV0Vzw.jpg               14.91 kB
+2026-11-21T14:35:08.0768665Z .output/public/assets/fittrack-logo-BDg8L0k1.png       17.53 kB
+2026-11-21T14:35:08.0769390Z .output/public/assets/recovery-pose-B_gDSMv3.jpg       17.76 kB
+2026-11-21T14:35:08.0769954Z .output/public/assets/floor-press-JMQoNJXg.jpg         18.82 kB
+2026-11-21T14:35:08.0770525Z .output/public/assets/reverse-lunge-DCBLN7hv.jpg       19.06 kB
+2026-11-21T14:35:08.0771106Z .output/public/assets/floor-press-c-oGch_CNf.jpg       20.45 kB
+2026-11-21T14:35:08.0771694Z .output/public/assets/recovery-stretch-DpDAYgfG.jpg    21.85 kB
+2026-11-21T14:35:08.0772340Z .output/public/assets/lateral-raise-CQHt4wjI.jpg       22.71 kB
+2026-11-21T14:35:08.0772894Z .output/public/assets/goblet-squat-DA13dA_r.jpg        22.73 kB
+2026-11-21T14:35:08.0773838Z .output/public/assets/hammer-curl-dJ2sU2zG.jpg         23.30 kB
+2026-11-21T14:35:08.0774467Z .output/public/assets/split-squat-BlqjziKm.jpg         23.53 kB
+2026-11-21T14:35:08.0775023Z .output/public/assets/push-up-s04Qvz-8.jpg             24.09 kB
+2026-11-21T14:35:08.0775564Z .output/public/assets/one-arm-row-SoqOsU1q.jpg         24.17 kB
+2026-11-21T14:35:08.0776118Z .output/public/assets/romanian-deadlift-DfRCAeJR.jpg   24.22 kB
+2026-11-21T14:35:08.0776665Z .output/public/assets/bicep-curl-DhcRh4ry.jpg          24.70 kB
+2026-11-21T14:35:08.0777190Z .output/public/assets/chin-up-DZefz8bz.jpg             25.07 kB
+2026-11-21T14:35:08.0777904Z .output/public/assets/push-up-b-BGRr78gA.jpg           25.26 kB
+2026-11-21T14:35:08.0778425Z .output/public/assets/commitment-day-BBHXewZW.jpg      25.48 kB
+2026-11-21T14:35:08.0779191Z .output/public/assets/shoulder-press-BCUIxWka.jpg      26.45 kB
+2026-11-21T14:35:08.0779715Z .output/public/assets/dead-bug-DhN02or5.jpg            27.18 kB
+2026-11-21T14:35:08.0780182Z .output/public/assets/reverse-crunch-Cp0wKrrW.jpg      29.21 kB
+2026-11-21T14:35:08.0780555Z .output/public/assets/core-plank-Dhqtk3Sd.jpg          30.22 kB
+2026-11-21T14:35:08.0780920Z .output/public/assets/rest-day-CmhONfAK.jpg            30.87 kB
+2026-11-21T14:35:08.0781295Z .output/public/assets/weekly-review-k5HCqxud.jpg       33.30 kB
+2026-11-21T14:35:08.0781667Z .output/public/assets/assisted-pull-up-D2X6eiwG.jpg    33.72 kB
+2026-11-21T14:35:08.0782046Z .output/public/assets/plan-next-week-BrMTFE87.jpg      34.46 kB
+2026-11-21T14:35:08.0782421Z .output/public/assets/knee-tuck-BYedwiUt.jpg           58.85 kB
+2026-11-21T14:35:08.0783155Z .output/public/assets/styles-jZqPg52U.css              94.43 kB │ gzip:  16.18 kB
+2026-11-21T14:35:08.0783685Z .output/public/assets/loader-circle-mHi62i5Y.js         0.14 kB │ gzip:   0.15 kB
+2026-11-21T14:35:08.0784225Z .output/public/assets/plus-C-Kglag1.js                  0.15 kB │ gzip:   0.15 kB
+2026-11-21T14:35:08.0784748Z .output/public/assets/useNavigate-DZjufC9X.js           0.18 kB │ gzip:   0.16 kB
+2026-11-21T14:35:08.0785244Z .output/public/assets/moon-D7sKw4ce.js                  0.21 kB │ gzip:   0.19 kB
+2026-11-21T14:35:08.0785733Z .output/public/assets/utensils-DekR1iox.js              0.26 kB │ gzip:   0.20 kB
+2026-11-21T14:35:08.0786232Z .output/public/assets/code-xml-BIx7LYal.js              0.28 kB │ gzip:   0.20 kB
+2026-11-21T14:35:08.0786747Z .output/public/assets/skip-forward-lzrTJjqf.js          0.38 kB │ gzip:   0.27 kB
+2026-11-21T14:35:08.0787441Z .output/public/assets/footprints-BW0uJyW4.js            0.44 kB │ gzip:   0.29 kB
+2026-11-21T14:35:08.0787989Z .output/public/assets/trophy-DDtz0x1V.js                0.47 kB │ gzip:   0.27 kB
+2026-11-21T14:35:08.0788489Z .output/public/assets/sparkles-B7AfkqDK.js              0.49 kB │ gzip:   0.28 kB
+2026-11-21T14:35:08.0788992Z .output/public/assets/input-BdElsd7T.js                 0.61 kB │ gzip:   0.38 kB
+2026-11-21T14:35:08.0789502Z .output/public/assets/photo-store-CfUoDm_Q.js           1.61 kB │ gzip:   0.88 kB
+2026-11-21T14:35:08.0790012Z .output/public/assets/photo-panel-BF0ZvBre.js           3.87 kB │ gzip:   1.72 kB
+2026-11-21T14:35:08.0790509Z .output/public/assets/coach-panel-B7pass96.js           3.92 kB │ gzip:   1.70 kB
+2026-11-21T14:35:08.0791000Z .output/public/assets/habits-Cogdg5-C.js                4.17 kB │ gzip:   1.79 kB
+2026-11-21T14:35:08.0791495Z .output/public/assets/progress-NbNPoREm.js              4.39 kB │ gzip:   1.85 kB
+2026-11-21T14:35:08.0792003Z .output/public/assets/journal-BIiTp9VQ.js               4.88 kB │ gzip:   2.05 kB
+2026-11-21T14:35:08.0792497Z .output/public/assets/routes-1YeaV7wk.js                5.41 kB │ gzip:   2.04 kB
+2026-11-21T14:35:08.0792988Z .output/public/assets/routine-list-Cu2DkfSK.js          5.42 kB │ gzip:   2.22 kB
+2026-11-21T14:35:08.0793487Z .output/public/assets/learn._day-Izii0mSu.js            5.79 kB │ gzip:   2.35 kB
+2026-11-21T14:35:08.0793969Z .output/public/assets/auth-DMGlv1wg.js                  6.56 kB │ gzip:   2.91 kB
+2026-11-21T14:35:08.0794688Z .output/public/assets/learning-Ccqg-26L.js              9.59 kB │ gzip:   3.36 kB
+2026-11-21T14:35:08.0795191Z .output/public/assets/ui-Dplo4KYM.js                   10.62 kB │ gzip:   3.56 kB
+2026-11-21T14:35:08.0795722Z .output/public/assets/settings-C0cXZO-O.js             12.51 kB │ gzip:   5.04 kB
+2026-11-21T14:35:08.0796351Z .output/public/assets/learn._day-CUQpqfxf.js           13.65 kB │ gzip:   4.96 kB
+2026-11-21T14:35:08.0797026Z .output/public/assets/workouts-aeK3ee8b.js             19.20 kB │ gzip:   7.37 kB
+2026-11-21T14:35:08.0797878Z .output/public/assets/wellness-M6dqA4wS.js             21.77 kB │ gzip:   7.03 kB
+2026-11-21T14:35:08.0798589Z .output/public/assets/feit-store-lNlMLqxh.js           24.92 kB │ gzip:  10.23 kB
+2026-11-21T14:35:08.0799295Z .output/public/assets/button-Bil-WNYZ.js               35.45 kB │ gzip:  11.74 kB
+2026-11-21T14:35:08.0800275Z .output/public/assets/auth-middleware-CZ6TK3AS.js      41.03 kB │ gzip:  14.27 kB
+2026-11-21T14:35:08.0801009Z .output/public/assets/client-CwQPoP4s.js              240.16 kB │ gzip:  64.78 kB
+2026-11-21T14:35:08.0801761Z .output/public/assets/index-sycjMpCP.js               323.01 kB │ gzip: 104.08 kB
+2026-11-21T14:35:08.0802450Z .output/public/assets/LineChart-mV9aRC-O.js           407.78 kB │ gzip: 110.18 kB
+2026-11-21T14:35:08.0802756Z 
+2026-11-21T14:35:08.0802960Z [32m✓ built in 1.05s[39m
+2026-11-21T14:35:08.0803447Z [36mvite v8.1.5 [32mbuilding ssr environment for production...[36m[39m
+2026-11-21T14:35:08.0900654Z [2K
+2026-11-21T14:35:08.1269487Z [33m[plugin tanstack-start-core::server-fn:ssr] /home/runner/work/feitxy/feitxy/src/lib/food.functions.ts?tss-serverfn-split:38:28 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.[39m
+2026-11-21T14:35:08.1388445Z [33m[plugin tanstack-start-core::server-fn:ssr] /home/runner/work/feitxy/feitxy/src/lib/learn.functions.ts?tss-serverfn-split:37:31 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.[39m
+2026-11-21T14:35:08.1391382Z [33m[plugin tanstack-start-core::server-fn:ssr] /home/runner/work/feitxy/feitxy/src/lib/learn.functions.ts?tss-serverfn-split:51:27 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.[39m
+2026-11-21T14:35:08.1393682Z [33m[plugin tanstack-start-core::server-fn:ssr] /home/runner/work/feitxy/feitxy/src/lib/learn.functions.ts?tss-serverfn-split:65:32 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.[39m
+2026-11-21T14:35:08.2324372Z [33m[plugin tanstack-start-core::server-fn:ssr] /home/runner/work/feitxy/feitxy/src/lib/push.functions.ts?tss-serverfn-split:18:37 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.[39m
+2026-11-21T14:35:08.2328807Z [33m[plugin tanstack-start-core::server-fn:ssr] /home/runner/work/feitxy/feitxy/src/lib/push.functions.ts?tss-serverfn-split:36:39 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.[39m
+2026-11-21T14:35:08.2331326Z [33m[plugin tanstack-start-core::server-fn:ssr] /home/runner/work/feitxy/feitxy/src/lib/push.functions.ts?tss-serverfn-split:44:37 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.[39m
+2026-11-21T14:35:08.2390216Z [33m[plugin tanstack-start-core::server-fn:ssr] /home/runner/work/feitxy/feitxy/src/lib/coach.functions.ts?tss-serverfn-split:13:27 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.[39m
+2026-11-21T14:35:08.2984182Z [33m[plugin tanstack-start-core::server-fn:ssr] /home/runner/work/feitxy/feitxy/src/lib/push.functions.ts:18:37 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.[39m
+2026-11-21T14:35:08.2986483Z [33m[plugin tanstack-start-core::server-fn:ssr] /home/runner/work/feitxy/feitxy/src/lib/push.functions.ts:36:39 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.[39m
+2026-11-21T14:35:08.2989340Z [33m[plugin tanstack-start-core::server-fn:ssr] /home/runner/work/feitxy/feitxy/src/lib/push.functions.ts:44:37 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.[39m
+2026-11-21T14:35:08.3962477Z [33m[plugin tanstack-start-core::server-fn:ssr] /home/runner/work/feitxy/feitxy/src/lib/learn.functions.ts:37:31 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.[39m
+2026-11-21T14:35:08.3964589Z [33m[plugin tanstack-start-core::server-fn:ssr] /home/runner/work/feitxy/feitxy/src/lib/learn.functions.ts:51:27 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.[39m
+2026-11-21T14:35:08.3966651Z [33m[plugin tanstack-start-core::server-fn:ssr] /home/runner/work/feitxy/feitxy/src/lib/learn.functions.ts:65:32 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.[39m
+2026-11-21T14:35:08.4129362Z [33m[plugin tanstack-start-core::server-fn:ssr] /home/runner/work/feitxy/feitxy/src/lib/food.functions.ts:38:28 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.[39m
+2026-11-21T14:35:08.4142908Z [33m[plugin tanstack-start-core::server-fn:ssr] /home/runner/work/feitxy/feitxy/src/lib/coach.functions.ts:13:27 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.[39m
+2026-11-21T14:35:08.4199118Z transforming...✓ 151 modules transformed.
+2026-11-21T14:35:08.4463370Z rendering chunks...
+2026-11-21T14:35:08.4868422Z computing gzip size...
+2026-11-21T14:35:08.4889427Z node_modules/.nitro/vite/services/ssr/assets/plank-OMJV0Vzw.jpg                                 14.91 kB
+2026-11-21T14:35:08.4890508Z node_modules/.nitro/vite/services/ssr/assets/fittrack-logo-BDg8L0k1.png                         17.53 kB
+2026-11-21T14:35:08.4891594Z node_modules/.nitro/vite/services/ssr/assets/recovery-pose-B_gDSMv3.jpg                         17.76 kB
+2026-11-21T14:35:08.4892693Z node_modules/.nitro/vite/services/ssr/assets/floor-press-JMQoNJXg.jpg                           18.82 kB
+2026-11-21T14:35:08.4893781Z node_modules/.nitro/vite/services/ssr/assets/reverse-lunge-DCBLN7hv.jpg                         19.06 kB
+2026-11-21T14:35:08.4895038Z node_modules/.nitro/vite/services/ssr/assets/floor-press-c-oGch_CNf.jpg                         20.45 kB
+2026-11-21T14:35:08.4896039Z node_modules/.nitro/vite/services/ssr/assets/recovery-stretch-DpDAYgfG.jpg                      21.85 kB
+2026-11-21T14:35:08.4897014Z node_modules/.nitro/vite/services/ssr/assets/lateral-raise-CQHt4wjI.jpg                         22.71 kB
+2026-11-21T14:35:08.4898147Z node_modules/.nitro/vite/services/ssr/assets/goblet-squat-DA13dA_r.jpg                          22.73 kB
+2026-11-21T14:35:08.4899023Z node_modules/.nitro/vite/services/ssr/assets/hammer-curl-dJ2sU2zG.jpg                           23.30 kB
+2026-11-21T14:35:08.4900010Z node_modules/.nitro/vite/services/ssr/assets/split-squat-BlqjziKm.jpg                           23.53 kB
+2026-11-21T14:35:08.4900972Z node_modules/.nitro/vite/services/ssr/assets/push-up-s04Qvz-8.jpg                               24.09 kB
+2026-11-21T14:35:08.4901927Z node_modules/.nitro/vite/services/ssr/assets/one-arm-row-SoqOsU1q.jpg                           24.17 kB
+2026-11-21T14:35:08.4902955Z node_modules/.nitro/vite/services/ssr/assets/romanian-deadlift-DfRCAeJR.jpg                     24.22 kB
+2026-11-21T14:35:08.4904024Z node_modules/.nitro/vite/services/ssr/assets/bicep-curl-DhcRh4ry.jpg                            24.70 kB
+2026-11-21T14:35:08.4904985Z node_modules/.nitro/vite/services/ssr/assets/chin-up-DZefz8bz.jpg                               25.07 kB
+2026-11-21T14:35:08.4905994Z node_modules/.nitro/vite/services/ssr/assets/push-up-b-BGRr78gA.jpg                             25.26 kB
+2026-11-21T14:35:08.4906980Z node_modules/.nitro/vite/services/ssr/assets/commitment-day-BBHXewZW.jpg                        25.48 kB
+2026-11-21T14:35:08.4908191Z node_modules/.nitro/vite/services/ssr/assets/shoulder-press-BCUIxWka.jpg                        26.45 kB
+2026-11-21T14:35:08.4909537Z node_modules/.nitro/vite/services/ssr/assets/dead-bug-DhN02or5.jpg                              27.18 kB
+2026-11-21T14:35:08.4910471Z node_modules/.nitro/vite/services/ssr/assets/reverse-crunch-Cp0wKrrW.jpg                        29.21 kB
+2026-11-21T14:35:08.4911412Z node_modules/.nitro/vite/services/ssr/assets/core-plank-Dhqtk3Sd.jpg                            30.22 kB
+2026-11-21T14:35:08.4912424Z node_modules/.nitro/vite/services/ssr/assets/rest-day-CmhONfAK.jpg                              30.87 kB
+2026-11-21T14:35:08.4913444Z node_modules/.nitro/vite/services/ssr/assets/weekly-review-k5HCqxud.jpg                         33.30 kB
+2026-11-21T14:35:08.4914455Z node_modules/.nitro/vite/services/ssr/assets/assisted-pull-up-D2X6eiwG.jpg                      33.72 kB
+2026-11-21T14:35:08.4915701Z node_modules/.nitro/vite/services/ssr/assets/plan-next-week-BrMTFE87.jpg                        34.46 kB
+2026-11-21T14:35:08.4916680Z node_modules/.nitro/vite/services/ssr/assets/knee-tuck-BYedwiUt.jpg                             58.85 kB
+2026-11-21T14:35:08.4918364Z node_modules/.nitro/vite/services/ssr/assets/styles-jZqPg52U.css                                94.43 kB │ gzip: 16.18 kB
+2026-11-21T14:35:08.4919669Z node_modules/.nitro/vite/services/ssr/assets/empty-plugin-adapters-C8OyCWKV.js                   0.12 kB │ gzip:  0.09 kB
+2026-11-21T14:35:08.4920925Z node_modules/.nitro/vite/services/ssr/assets/createServerRpc-CLVr2QBa.js                         0.30 kB │ gzip:  0.22 kB
+2026-11-21T14:35:08.4922184Z node_modules/.nitro/vite/services/ssr/assets/input-3s3ygKYl.js                                   0.70 kB │ gzip:  0.43 kB
+2026-11-21T14:35:08.4923451Z node_modules/.nitro/vite/services/ssr/assets/createMiddleware-C_jeXa5m.js                        0.73 kB │ gzip:  0.27 kB
+2026-11-21T14:35:08.4924761Z node_modules/.nitro/vite/services/ssr/assets/learn._day-vz9f4pkk.js                              0.76 kB │ gzip:  0.37 kB
+2026-11-21T14:35:08.4926007Z node_modules/.nitro/vite/services/ssr/assets/createSsrRpc-EhDbRCP0.js                            1.06 kB │ gzip:  0.53 kB
+2026-11-21T14:35:08.4927411Z node_modules/.nitro/vite/services/ssr/assets/photo-store-DLPLLSu8.js                             1.54 kB │ gzip:  0.68 kB
+2026-11-21T14:35:08.4928698Z node_modules/.nitro/vite/services/ssr/assets/client.server-DtzPVRtG.js                           1.66 kB │ gzip:  0.74 kB
+2026-11-21T14:35:08.4929877Z node_modules/.nitro/vite/services/ssr/assets/button-ADZ6QE9Z.js                                  1.69 kB │ gzip:  0.77 kB
+2026-11-21T14:35:08.4931169Z node_modules/.nitro/vite/services/ssr/assets/start-B_oq71w4.js                                   1.86 kB │ gzip:  0.81 kB
+2026-11-21T14:35:08.4932417Z node_modules/.nitro/vite/services/ssr/assets/push.functions-C9WWTgaH.js                          2.29 kB │ gzip:  0.92 kB
+2026-11-21T14:35:08.4933591Z node_modules/.nitro/vite/services/ssr/assets/createCsrfMiddleware-CGTWTAvE.js                    2.35 kB │ gzip:  0.80 kB
+2026-11-21T14:35:08.4934952Z node_modules/.nitro/vite/services/ssr/assets/__23tanstack-start-server-fn-resolver-BdXS9Pdc.js   2.44 kB │ gzip:  0.92 kB
+2026-11-21T14:35:08.4936255Z node_modules/.nitro/vite/services/ssr/assets/auth-middleware-KHEyyy0W.js                         2.60 kB │ gzip:  1.05 kB
+2026-11-21T14:35:08.4937677Z node_modules/.nitro/vite/services/ssr/assets/push.server-DEQv4vui.js                             2.79 kB │ gzip:  1.20 kB
+2026-11-21T14:35:08.4938959Z node_modules/.nitro/vite/services/ssr/assets/coach.functions-CXWCreXO.js                         3.08 kB │ gzip:  1.46 kB
+2026-11-21T14:35:08.4940137Z node_modules/.nitro/vite/services/ssr/assets/auth-x_GjCQni.js                                    4.04 kB │ gzip:  1.46 kB
+2026-11-21T14:35:08.4941262Z node_modules/.nitro/vite/services/ssr/assets/food.functions-S_NBsGOB.js                          4.08 kB │ gzip:  1.87 kB
+2026-11-21T14:35:08.4942613Z node_modules/.nitro/vite/services/ssr/assets/_tanstack-start-manifest_v-Dxzusbbe.js              4.27 kB │ gzip:  0.95 kB
+2026-11-21T14:35:08.4944020Z node_modules/.nitro/vite/services/ssr/index.js                                                   4.48 kB │ gzip:  1.88 kB
+2026-11-21T14:35:08.4945463Z node_modules/.nitro/vite/services/ssr/assets/photo-panel-Cex9_C8C.js                             5.10 kB │ gzip:  1.80 kB
+2026-11-21T14:35:08.4946637Z node_modules/.nitro/vite/services/ssr/assets/journal-TTU0fOtw.js                                 5.38 kB │ gzip:  2.00 kB
+2026-11-21T14:35:08.4947919Z node_modules/.nitro/vite/services/ssr/assets/coach-panel-C5kbhd8l.js                             5.53 kB │ gzip:  1.99 kB
+2026-11-21T14:35:08.4949129Z node_modules/.nitro/vite/services/ssr/assets/learn.functions-BbXn6RQz.js                         5.72 kB │ gzip:  2.12 kB
+2026-11-21T14:35:08.4950566Z node_modules/.nitro/vite/services/ssr/assets/push.functions-BeM9_bnT.js                          5.95 kB │ gzip:  1.79 kB
+2026-11-21T14:35:08.4951740Z node_modules/.nitro/vite/services/ssr/assets/habits-Bfx6mZLu.js                                  6.40 kB │ gzip:  2.03 kB
+2026-11-21T14:35:08.4952923Z node_modules/.nitro/vite/services/ssr/assets/progress-prY5IU0R.js                                7.13 kB │ gzip:  2.34 kB
+2026-11-21T14:35:08.4954074Z node_modules/.nitro/vite/services/ssr/assets/client-1HMJLyp9.js                                  7.84 kB │ gzip:  2.58 kB
+2026-11-21T14:35:08.4955188Z node_modules/.nitro/vite/services/ssr/assets/routes-CnoARkIj.js                                  8.25 kB │ gzip:  2.46 kB
+2026-11-21T14:35:08.4956367Z node_modules/.nitro/vite/services/ssr/assets/routine-list-kJsdvnCQ.js                            8.25 kB │ gzip:  2.56 kB
+2026-11-21T14:35:08.4957652Z node_modules/.nitro/vite/services/ssr/assets/ui-oN342jxj.js                                     11.33 kB │ gzip:  3.00 kB
+2026-11-21T14:35:08.4958818Z node_modules/.nitro/vite/services/ssr/assets/createServerFn-BMmgnUOA.js                         11.84 kB │ gzip:  3.39 kB
+2026-11-21T14:35:08.4959980Z node_modules/.nitro/vite/services/ssr/assets/learning-Hgo6QN1y.js                               14.97 kB │ gzip:  3.86 kB
+2026-11-21T14:35:08.4961157Z node_modules/.nitro/vite/services/ssr/assets/settings-rSDVgl4-.js                               15.20 kB │ gzip:  4.99 kB
+2026-11-21T14:35:08.4962329Z node_modules/.nitro/vite/services/ssr/assets/router-LtFohZi4.js                                 19.73 kB │ gzip:  5.43 kB
+2026-11-21T14:35:08.4963473Z node_modules/.nitro/vite/services/ssr/assets/feit-store-BAsChvbo.js                             20.42 kB │ gzip:  6.58 kB
+2026-11-21T14:35:08.4964675Z node_modules/.nitro/vite/services/ssr/assets/learn._day-DoGqYQJG.js                             20.95 kB │ gzip:  5.70 kB
+2026-11-21T14:35:08.4965644Z node_modules/.nitro/vite/services/ssr/assets/workouts-BJEFhtq_.js                               26.83 kB │ gzip:  8.18 kB
+2026-11-21T14:35:08.4967365Z node_modules/.nitro/vite/services/ssr/assets/wellness-CPAL850J.js                               33.09 kB │ gzip:  8.03 kB
+2026-11-21T14:35:08.4968134Z node_modules/.nitro/vite/services/ssr/assets/server-Bvec5D_w.js                                 56.34 kB │ gzip: 14.19 kB
+2026-11-21T14:35:08.4968442Z 
+2026-11-21T14:35:08.4968574Z [32m✓ built in 409ms[39m
+2026-11-21T14:35:08.4969085Z [start] [nitro] Building [[35mNitro[39m] [2m(preset: `cloudflare-module`, compatibility: `2026-11-21`)[22m
+2026-11-21T14:35:08.5703567Z [success] [nitro] Generated public [36m.output/public[39m
+2026-11-21T14:35:08.5710858Z [36mvite v8.1.5 [32mbuilding nitro environment for production...[36m[39m
+2026-11-21T14:35:08.5738017Z [warn] `inlineDynamicImports` option is ignored because the `codeSplitting` option is specified.
+2026-11-21T14:35:08.5836149Z [2K
+2026-11-21T14:35:08.8320510Z transforming...✓ 2456 modules transformed.
+2026-11-21T14:35:08.9868378Z rendering chunks...
+2026-11-21T14:35:09.2158151Z computing gzip size...
+2026-11-21T14:35:09.2280092Z .output/server/_ssr/empty-plugin-adapters-C8OyCWKV.mjs               0.12 kB │ gzip:   0.09 kB
+2026-11-21T14:35:09.2281432Z .output/server/_ssr/createServerRpc-CLVr2QBa.mjs                     0.31 kB │ gzip:   0.22 kB
+2026-11-21T14:35:09.2282008Z .output/server/_chunks/ssr-renderer.mjs                              0.40 kB │ gzip:   0.27 kB
+2026-11-21T14:35:09.2282559Z .output/server/_ssr/createMiddleware-C_jeXa5m.mjs                    0.73 kB │ gzip:   0.27 kB
+2026-11-21T14:35:09.2283107Z .output/server/_ssr/learn._day-vz9f4pkk.mjs                          0.79 kB │ gzip:   0.39 kB
+2026-11-21T14:35:09.2283715Z .output/server/_ssr/input-3s3ygKYl.mjs                               0.99 kB │ gzip:   0.52 kB
+2026-11-21T14:35:09.2284422Z .output/server/_libs/hookable.mjs                                    1.11 kB │ gzip:   0.48 kB
+2026-11-21T14:35:09.2285204Z .output/server/_ssr/createSsrRpc-EhDbRCP0.mjs                        1.26 kB │ gzip:   0.61 kB
+2026-11-21T14:35:09.2286113Z .output/server/_libs/react-is.mjs                                    1.31 kB │ gzip:   0.48 kB
+2026-11-21T14:35:09.2286926Z .output/server/_ssr/photo-store-DLPLLSu8.mjs                         1.54 kB │ gzip:   0.68 kB
+2026-11-21T14:35:09.2287924Z .output/server/_runtime.mjs                                          1.57 kB │ gzip:   0.71 kB
+2026-11-21T14:35:09.2288760Z .output/server/_libs/react+tanstack__react-query.mjs                 1.60 kB │ gzip:   0.66 kB
+2026-11-21T14:35:09.2289588Z .output/server/_libs/prop-types.mjs                                  1.70 kB │ gzip:   0.68 kB
+2026-11-21T14:35:09.2290432Z .output/server/_ssr/client.server-DtzPVRtG.mjs                       1.73 kB │ gzip:   0.77 kB
+2026-11-21T14:35:09.2291286Z .output/server/_ssr/start-B_oq71w4.mjs                               1.86 kB │ gzip:   0.81 kB
+2026-11-21T14:35:09.2292174Z .output/server/_ssr/button-ADZ6QE9Z.mjs                              2.02 kB │ gzip:   0.87 kB
+2026-11-21T14:35:09.2293092Z .output/server/_ssr/createCsrfMiddleware-CGTWTAvE.mjs                2.35 kB │ gzip:   0.80 kB
+2026-11-21T14:35:09.2294029Z .output/server/_libs/class-variance-authority+clsx.mjs               2.42 kB │ gzip:   0.81 kB
+2026-11-21T14:35:09.2294963Z .output/server/_ssr/push.functions-C9WWTgaH.mjs                      2.49 kB │ gzip:   0.98 kB
+2026-11-21T14:35:09.2295884Z .output/server/__23tanstack-start-server-fn-resolver-BdXS9Pdc.mjs    2.50 kB │ gzip:   0.93 kB
+2026-11-21T14:35:09.2296873Z .output/server/_ssr/auth-middleware-KHEyyy0W.mjs                     2.67 kB │ gzip:   1.07 kB
+2026-11-21T14:35:09.2297893Z .output/server/_ssr/push.server-DEQv4vui.mjs                         2.81 kB │ gzip:   1.22 kB
+2026-11-21T14:35:09.2298794Z .output/server/_ssr/coach.functions-CXWCreXO.mjs                     3.18 kB │ gzip:   1.49 kB
+2026-11-21T14:35:09.2299659Z .output/server/_libs/d3-path.mjs                                     3.82 kB │ gzip:   1.29 kB
+2026-11-21T14:35:09.2300512Z .output/server/_ssr/food.functions-S_NBsGOB.mjs                      4.17 kB │ gzip:   1.90 kB
+2026-11-21T14:35:09.2301431Z .output/server/_tanstack-start-manifest_v-Dxzusbbe.mjs               4.27 kB │ gzip:   0.95 kB
+2026-11-21T14:35:09.2302297Z .output/server/_ssr/ssr.mjs                                          4.48 kB │ gzip:   1.87 kB
+2026-11-21T14:35:09.2303094Z .output/server/_ssr/auth-x_GjCQni.mjs                                4.79 kB │ gzip:   1.58 kB
+2026-11-21T14:35:09.2303890Z .output/server/_libs/eventemitter3.mjs                               5.37 kB │ gzip:   1.40 kB
+2026-11-21T14:35:09.2304739Z .output/server/_ssr/learn.functions-BbXn6RQz.mjs                     5.84 kB │ gzip:   2.16 kB
+2026-11-21T14:35:09.2305632Z .output/server/_ssr/photo-panel-Cex9_C8C.mjs                         5.98 kB │ gzip:   1.93 kB
+2026-11-21T14:35:09.2306514Z .output/server/_libs/d3-interpolate.mjs                              6.07 kB │ gzip:   2.18 kB
+2026-11-21T14:35:09.2307515Z .output/server/_libs/radix-ui__react-slot.mjs                        6.15 kB │ gzip:   1.89 kB
+2026-11-21T14:35:09.2308404Z .output/server/_ssr/push.functions-BeM9_bnT.mjs                      6.16 kB │ gzip:   1.84 kB
+2026-11-21T14:35:09.2309584Z .output/server/_ssr/journal-TTU0fOtw.mjs                             6.29 kB │ gzip:   2.15 kB
+2026-11-21T14:35:09.2310467Z .output/server/_ssr/coach-panel-C5kbhd8l.mjs                         6.66 kB │ gzip:   2.13 kB
+2026-11-21T14:35:09.2311402Z .output/server/_libs/lovable.dev__cloud-auth-js.mjs                  7.20 kB │ gzip:   2.49 kB
+2026-11-21T14:35:09.2312281Z .output/server/_ssr/habits-Bfx6mZLu.mjs                              7.53 kB │ gzip:   2.18 kB
+2026-11-21T14:35:09.2313179Z .output/server/_ssr/client-1HMJLyp9.mjs                              7.93 kB │ gzip:   2.61 kB
+2026-11-21T14:35:09.2314081Z .output/server/_ssr/progress-prY5IU0R.mjs                            8.24 kB │ gzip:   2.43 kB
+2026-11-21T14:35:09.2314848Z .output/server/_libs/d3-array.mjs                                    8.51 kB │ gzip:   2.50 kB
+2026-11-21T14:35:09.2315818Z .output/server/_libs/d3-format.mjs                                   9.36 kB │ gzip:   2.88 kB
+2026-11-21T14:35:09.2316740Z .output/server/_ssr/routine-list-kJsdvnCQ.mjs                        9.40 kB │ gzip:   2.69 kB
+2026-11-21T14:35:09.2317849Z .output/server/_ssr/routes-CnoARkIj.mjs                              9.47 kB │ gzip:   2.55 kB
+2026-11-21T14:35:09.2318713Z .output/server/_libs/h3-v2+rou3+srvx.mjs                             9.69 kB │ gzip:   2.98 kB
+2026-11-21T14:35:09.2319564Z .output/server/_libs/tanstack__history.mjs                          10.88 kB │ gzip:   2.92 kB
+2026-11-21T14:35:09.2320352Z .output/server/_libs/pushforge__builder.mjs                         11.59 kB │ gzip:   3.64 kB
+2026-11-21T14:35:09.2321125Z .output/server/_ssr/createServerFn-BMmgnUOA.mjs                     11.92 kB │ gzip:   3.43 kB
+2026-11-21T14:35:09.2321716Z .output/server/_libs/supabase__functions-js+tslib.mjs               11.92 kB │ gzip:   3.38 kB
+2026-11-21T14:35:09.2322263Z .output/server/_ssr/ui-oN342jxj.mjs                                 13.33 kB │ gzip:   3.10 kB
+2026-11-21T14:35:09.2322887Z .output/server/_libs/d3-color.mjs                                   14.79 kB │ gzip:   4.76 kB
+2026-11-21T14:35:09.2323559Z .output/server/_libs/fast-equals.mjs                                14.85 kB │ gzip:   3.40 kB
+2026-11-21T14:35:09.2324095Z .output/server/_libs/lovable.dev__ai-gateway.mjs                    16.11 kB │ gzip:   4.88 kB
+2026-11-21T14:35:09.2324625Z .output/server/_libs/seroval.mjs                                    16.37 kB │ gzip:   3.93 kB
+2026-11-21T14:35:09.2325131Z .output/server/_libs/h3+rou3+srvx.mjs                               17.00 kB │ gzip:   4.89 kB
+2026-11-21T14:35:09.2325659Z .output/server/_ssr/settings-rSDVgl4-.mjs                           17.24 kB │ gzip:   5.16 kB
+2026-11-21T14:35:09.2326213Z .output/server/_libs/@radix-ui/react-compose-refs+[...].mjs         17.26 kB │ gzip:   4.64 kB
+2026-11-21T14:35:09.2326859Z .output/server/_ssr/learning-Hgo6QN1y.mjs                           17.38 kB │ gzip:   4.03 kB
+2026-11-21T14:35:09.2327668Z .output/server/_ssr/router-LtFohZi4.mjs                             20.93 kB │ gzip:   5.58 kB
+2026-11-21T14:35:09.2328282Z .output/server/_ssr/feit-store-BAsChvbo.mjs                         21.20 kB │ gzip:   6.69 kB
+2026-11-21T14:35:09.2328838Z .output/server/_libs/lucide-react.mjs                               22.10 kB │ gzip:   6.64 kB
+2026-11-21T14:35:09.2329383Z .output/server/_libs/decimal.js-light.mjs                           23.28 kB │ gzip:   6.87 kB
+2026-11-21T14:35:09.2329929Z .output/server/index.mjs                                            23.52 kB │ gzip:   6.48 kB
+2026-11-21T14:35:09.2330451Z .output/server/_ssr/learn._day-DoGqYQJG.mjs                         24.18 kB │ gzip:   5.88 kB
+2026-11-21T14:35:09.2331004Z .output/server/_ssr/workouts-BJEFhtq_.mjs                           29.48 kB │ gzip:   8.37 kB
+2026-11-21T14:35:09.2331552Z .output/server/_libs/d3-shape.mjs                                   33.72 kB │ gzip:   6.02 kB
+2026-11-21T14:35:09.2332311Z .output/server/_libs/supabase__supabase-js.mjs                      36.72 kB │ gzip:  10.40 kB
+2026-11-21T14:35:09.2333053Z .output/server/_libs/react-smooth.mjs                               37.56 kB │ gzip:   8.11 kB
+2026-11-21T14:35:09.2333609Z .output/server/_ssr/wellness-CPAL850J.mjs                           38.78 kB │ gzip:   8.28 kB
+2026-11-21T14:35:09.2334164Z .output/server/_libs/supabase__phoenix.mjs                          50.46 kB │ gzip:  12.71 kB
+2026-11-21T14:35:09.2334703Z .output/server/_libs/d3-scale+[...].mjs                             55.44 kB │ gzip:  11.40 kB
+2026-11-21T14:35:09.2335266Z .output/server/_ssr/server-Bvec5D_w.mjs                             56.70 kB │ gzip:  14.32 kB
+2026-11-21T14:35:09.2335825Z .output/server/_libs/supabase__realtime-js+unenv.mjs                77.87 kB │ gzip:  19.64 kB
+2026-11-21T14:35:09.2336385Z .output/server/_libs/lodash.mjs                                     87.02 kB │ gzip:  15.99 kB
+2026-11-21T14:35:09.2337015Z .output/server/_libs/tailwind-merge.mjs                             89.50 kB │ gzip:  15.27 kB
+2026-11-21T14:35:09.2337767Z .output/server/_libs/@tanstack/router-core+[...].mjs                95.88 kB │ gzip:  20.73 kB
+2026-11-21T14:35:09.2338341Z .output/server/_libs/tanstack__query-core.mjs                       96.37 kB │ gzip:  22.33 kB
+2026-11-21T14:35:09.2338899Z .output/server/_libs/zod.mjs                                        99.56 kB │ gzip:  17.19 kB
+2026-11-21T14:35:09.2339414Z .output/server/_libs/supabase__postgrest-js.mjs                    108.23 kB │ gzip:  22.07 kB
+2026-11-21T14:35:09.2339947Z .output/server/_libs/@supabase/storage-js+[...].mjs                122.02 kB │ gzip:  22.47 kB
+2026-11-21T14:35:09.2340485Z .output/server/_libs/supabase__auth-js+tslib.mjs                   297.41 kB │ gzip:  58.21 kB
+2026-11-21T14:35:09.2341006Z .output/server/_libs/recharts+[...].mjs                            485.58 kB │ gzip:  86.11 kB
+2026-11-21T14:35:09.2341589Z .output/server/_libs/@tanstack/react-router+[...].mjs              682.15 kB │ gzip: 142.82 kB
+2026-11-21T14:35:09.2341939Z 
+2026-11-21T14:35:09.2342126Z [32m✓ built in 657ms[39m
+2026-11-21T14:35:09.2342503Z [info] [nitro] Using auto generated worker name: `overpowerferdy-feitxy`
+2026-11-21T14:35:09.2342920Z [info] Generated [36m.output/server/wrangler.json[39m
+2026-11-21T14:35:09.2343279Z [info] Generated [36m.wrangler/deploy/config.json[39m
+2026-11-21T14:35:09.2343623Z [info] Generated [36m.output/public/_headers[39m
+2026-11-21T14:35:09.2343956Z [info] Generated [36m.output/nitro.json[39m
+2026-11-21T14:35:09.2344802Z [success] [nitro] You can preview this build using `npx vite preview`
+2026-11-21T14:35:09.2345349Z [success] [nitro] You can deploy this build using `npx nitro deploy --prebuilt`
+2026-11-21T14:35:09.2915572Z Build completed, checking output...
+2026-11-21T14:35:09.2947427Z total 96
+2026-11-21T14:35:09.2947774Z drwxr-xr-x 3 runner runner  4096 Nov 21 14:35 .
+2026-11-21T14:35:09.2948132Z drwxr-xr-x 4 runner runner  4096 Nov 21 14:35 ..
+2026-11-21T14:35:09.2948447Z -rw-r--r-- 1 runner runner    62 Nov 21 14:35 _headers
+2026-11-21T14:35:09.2948877Z -rw-r--r-- 1 runner runner 12311 Nov 21 14:35 apple-touch-icon.png
+2026-11-21T14:35:09.2949222Z drwxr-xr-x 2 runner runner  4096 Nov 21 14:35 assets
+2026-11-21T14:35:09.2949552Z -rw-r--r-- 1 runner runner  4093 Nov 21 14:35 favicon.png
+2026-11-21T14:35:09.2949880Z -rw-r--r-- 1 runner runner 13228 Nov 21 14:35 icon-192.png
+2026-11-21T14:35:09.2950206Z -rw-r--r-- 1 runner runner 30760 Nov 21 14:35 icon-512.png
+2026-11-21T14:35:09.2950546Z -rw-r--r-- 1 runner runner   319 Nov 21 14:35 manifest.webmanifest
+2026-11-21T14:35:09.2950886Z -rw-r--r-- 1 runner runner  1161 Nov 21 14:35 push-sw.js
+2026-11-21T14:35:09.2951337Z -rw-r--r-- 1 runner runner   160 Nov 21 14:35 robots.txt

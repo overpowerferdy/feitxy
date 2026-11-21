@@ -43,7 +43,7 @@ jobs:
       run: |
         npm run build
         echo "Build completed, checking output..."
-        ls -la .output/public/ || echo "No .output/public found"
+        ls -la dist/ || echo "No dist found"
     
     - name: Setup Capacitor Android platform
       run: |
