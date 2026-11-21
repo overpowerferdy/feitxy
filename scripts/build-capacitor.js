@@ -11,6 +11,7 @@ import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, '..');
+const outputDir = path.join(rootDir, '.output', 'public');
 const distDir = path.join(rootDir, 'dist');
 
 async function ensureDir(dir) {
@@ -18,6 +19,35 @@ async function ensureDir(dir) {
     await fs.access(dir);
   } catch {
     await fs.mkdir(dir, { recursive: true });
+  }
+}
+
+async function copyOutputToDist() {
+  console.log('📁 Moving .output/public to dist/...');
+  
+  // Ensure dist directory exists
+  await ensureDir(distDir);
+  
+  try {
+    // Copy everything from .output/public to dist
+    const entries = await fs.readdir(outputDir, { withFileTypes: true });
+    
+    for (const entry of entries) {
+      const src = path.join(outputDir, entry.name);
+      const dest = path.join(distDir, entry.name);
+      
+      if (entry.isDirectory()) {
+        // Copy directory recursively
+        await fs.cp(src, dest, { recursive: true });
+        console.log(`   Copied: ${entry.name}/`);
+      } else {
+        await fs.copyFile(src, dest);
+        console.log(`   Copied: ${entry.name}`);
+      }
+    }
+  } catch (error) {
+    console.error('❌ Failed to copy .output/public to dist:', error.message);
+    throw error;
   }
 }
 
@@ -77,7 +107,7 @@ async function generateIndexHtml() {
 }
 
 async function copyPublicAssets() {
-  console.log('📦 Copying public assets...');
+  console.log('📦 Ensuring all public assets are in dist...');
   const publicDir = path.join(rootDir, 'public');
   
   try {
@@ -87,8 +117,14 @@ async function copyPublicAssets() {
       if (entry.isFile()) {
         const src = path.join(publicDir, entry.name);
         const dest = path.join(distDir, entry.name);
-        await fs.copyFile(src, dest);
-        console.log(`   Copied: ${entry.name}`);
+        
+        // Only copy if not already present
+        try {
+          await fs.access(dest);
+        } catch {
+          await fs.copyFile(src, dest);
+          console.log(`   Added: ${entry.name}`);
+        }
       }
     }
   } catch (error) {
@@ -132,7 +168,10 @@ async function main() {
     // Ensure dist directory exists
     await ensureDir(distDir);
 
-    // Copy public assets first (in case they're not in the build)
+    // Move .output/public to dist
+    await copyOutputToDist();
+
+    // Ensure public assets are present
     await copyPublicAssets();
 
     // Generate proper index.html
