@@ -27,6 +27,10 @@ export default defineConfig({
     server: {
       port: 3000,
       host: true
+    },
+    // Define environment variables for the mobile app
+    define: {
+      'import.meta.env.VITE_API_BASE': JSON.stringify('https://feitxy.lovable.app'),
     }
   }
 });
