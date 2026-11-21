@@ -42,8 +42,15 @@ jobs:
     - name: Build web application
       run: |
         npm run build
-        echo "Build completed, checking output..."
-        ls -la dist/ || echo "No dist found"
+        echo "Build completed, checking output directories..."
+        echo "=== Checking dist ==="
+        ls -la dist/ 2>/dev/null || echo "No dist directory"
+        echo "=== Checking .output/public ==="
+        ls -la .output/public/ 2>/dev/null || echo "No .output/public directory"
+        echo "=== Checking .output ==="
+        ls -la .output/ 2>/dev/null || echo "No .output directory"
+        echo "=== Root directory ==="
+        ls -la
     
     - name: Setup Capacitor Android platform
       run: |
