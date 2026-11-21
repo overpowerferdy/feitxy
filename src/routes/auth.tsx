@@ -4,7 +4,7 @@ import { Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
+import { signInWithGoogle } from "@/lib/lovable-auth";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({ meta: [{ title: "Sign in — Feit" }, { name: "description", content: "Sign in to get AI reviews of your Feit logs." }, { property: "og:title", content: "Sign in — Feit" }, { property: "og:description", content: "Sign in to get AI reviews of your Feit logs." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
@@ -27,8 +27,9 @@ function AuthPage() {
     if (data.session) navigate({ to: "/workouts" }); else setMsg("Check your email to confirm your account, then sign in.");
   }
   async function google() {
-    const r = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
-    if ("error" in r && r.error) setMsg(r.error.message); else if (!("redirected" in r && r.redirected)) navigate({ to: "/workouts" });
+    const r = await signInWithGoogle();
+    if ("error" in r && r.error) setMsg(r.error.message);
+    else if (!("redirected" in r && r.redirected)) navigate({ to: "/workouts" });
   }
   return <div className="flex min-h-screen items-center justify-center bg-background px-4"><div className="w-full max-w-sm rounded-2xl border border-border bg-card p-6 shadow-sm">
     <div className="mb-6 flex items-center gap-3"><span className="flex size-10 items-center justify-center rounded-xl bg-primary text-primary-foreground"><Activity size={20} /></span><div><h1 className="text-xl font-bold">{mode === "in" ? "Welcome back" : "Create account"}</h1><p className="text-sm text-muted-foreground">Needed for your AI coach reviews</p></div></div>

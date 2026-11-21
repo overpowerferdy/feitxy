@@ -1,24 +1,28 @@
 #!/usr/bin/env node
 
 /**
- * Generate Android icon resources from source images
- * This creates the proper mipmap-* folders with correctly sized icons
+ * Generate correctly sized Android launcher icons from the Feit logo.
+ *
+ * Android needs a separate bitmap size for every density. Copying one 192px/512px
+ * file into every mipmap folder makes the launcher scale it at runtime, which is
+ * what made the icon look zoomed out / blurry on the device.
  */
 
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import sharp from 'sharp';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, '..');
 
-// Android icon sizes for different densities
-const iconSizes = {
-  'mipmap-mdpi': 48,
-  'mipmap-hdpi': 72,
-  'mipmap-xhdpi': 96,
-  'mipmap-xxhdpi': 144,
-  'mipmap-xxxhdpi': 192
+/** density -> [legacy launcher size, adaptive foreground size] */
+const densities = {
+  'mipmap-mdpi': [48, 108],
+  'mipmap-hdpi': [72, 162],
+  'mipmap-xhdpi': [96, 216],
+  'mipmap-xxhdpi': [144, 324],
+  'mipmap-xxxhdpi': [192, 432],
 };
 
 async function ensureDir(dir) {
@@ -29,78 +33,79 @@ async function ensureDir(dir) {
   }
 }
 
-async function copyIconsFromDist() {
-  console.log('🎨 Generating Android icons...');
-  
+async function main() {
+  console.log('🎨 Generating Android launcher icons...');
+
   const androidResDir = path.join(rootDir, 'android', 'app', 'src', 'main', 'res');
-  const distDir = path.join(rootDir, 'dist');
-  
-  // Check if android folder exists
+
   try {
     await fs.access(androidResDir);
   } catch {
-    console.log('⚠️  Android platform not added yet. Run "npx cap add android" first.');
+    console.warn('⚠️  Android platform not added yet. Run "npx cap add android" first.');
     return;
   }
 
-  // Source icons from dist
-  const icon192 = path.join(distDir, 'icon-192.png');
-  const icon512 = path.join(distDir, 'icon-512.png');
-  
+  const source = path.join(rootDir, 'public', 'icon-512.png');
   try {
-    await fs.access(icon192);
+    await fs.access(source);
   } catch {
-    console.error('❌ icon-192.png not found in dist/');
-    console.log('   Make sure to build the project first: npm run build:capacitor');
-    return;
+    console.error('❌ public/icon-512.png not found. Build the web app first.');
+    process.exit(1);
   }
 
-  // Create mipmap folders and copy appropriately sized icons
-  for (const [folder, size] of Object.entries(iconSizes)) {
+  const logo = await sharp(source).ensureAlpha().png().toBuffer();
+
+  for (const [folder, [launcherSize, foregroundSize]] of Object.entries(densities)) {
     const folderPath = path.join(androidResDir, folder);
     await ensureDir(folderPath);
 
-    // Use icon-192 for smaller sizes, icon-512 for larger
-    const sourceIcon = size <= 144 ? icon192 : icon512;
-    
-    try {
-      // Copy for both launcher and round launcher
-      await fs.copyFile(sourceIcon, path.join(folderPath, 'ic_launcher.png'));
-      await fs.copyFile(sourceIcon, path.join(folderPath, 'ic_launcher_round.png'));
-      await fs.copyFile(sourceIcon, path.join(folderPath, 'ic_launcher_foreground.png'));
-      
-      console.log(`   ✓ ${folder} (${size}x${size})`);
-    } catch (error) {
-      console.warn(`   ⚠️  Failed to copy to ${folder}:`, error.message);
-    }
+    // Flat launcher icon (used on older launchers and in Settings).
+    const launcher = await sharp(logo)
+      .resize(launcherSize, launcherSize, { fit: 'contain' })
+      .png()
+      .toBuffer();
+    await fs.writeFile(path.join(folderPath, 'ic_launcher.png'), launcher);
+    await fs.writeFile(path.join(folderPath, 'ic_launcher_round.png'), launcher);
+
+    // Adaptive icon foreground: keep the artwork inside the central safe zone
+    // (about 66% of the canvas) so the launcher mask never clips the logo.
+    const safeLogo = await sharp(logo)
+      .resize(Math.round(foregroundSize * 0.66), Math.round(foregroundSize * 0.66), {
+        fit: 'contain',
+      })
+      .toBuffer();
+    const foreground = await sharp({
+      create: {
+        width: foregroundSize,
+        height: foregroundSize,
+        channels: 4,
+        background: { r: 0, g: 0, b: 0, alpha: 0 },
+      },
+    })
+      .composite([{ input: safeLogo, gravity: 'centre' }])
+      .png()
+      .toBuffer();
+    await fs.writeFile(path.join(folderPath, 'ic_launcher_foreground.png'), foreground);
+
+    console.log(`   ✓ ${folder}: ${launcherSize}px launcher, ${foregroundSize}px foreground`);
   }
 
-  // Copy adaptive icon background
   const valuesDir = path.join(androidResDir, 'values');
   await ensureDir(valuesDir);
-  
-  const icLauncherBackgroundXml = `<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <color name="ic_launcher_background">#113b22</color>
-</resources>`;
-
   await fs.writeFile(
     path.join(valuesDir, 'ic_launcher_background.xml'),
-    icLauncherBackgroundXml,
+    `<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="ic_launcher_background">#113b22</color>
+</resources>
+`,
     'utf-8'
   );
 
-  console.log('   ✓ ic_launcher_background.xml');
-  console.log('\n✅ Android icons generated successfully!');
+  console.log('✅ Android icons generated successfully!');
 }
 
-async function main() {
-  try {
-    await copyIconsFromDist();
-  } catch (error) {
-    console.error('\n❌ Icon generation failed:', error.message);
-    process.exit(1);
-  }
-}
-
-main();
+main().catch((error) => {
+  console.error('\n❌ Icon generation failed:', error.message);
+  process.exit(1);
+});
