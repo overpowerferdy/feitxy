@@ -26,9 +26,20 @@ export default defineConfig({
       // Ensure proper chunking for mobile
       rollupOptions: {
         output: {
-          manualChunks: {
-            'vendor-react': ['react', 'react-dom'],
-            'vendor-tanstack': ['@tanstack/react-router', '@tanstack/react-query'],
+          manualChunks(id) {
+            // Split vendor chunks for better caching
+            if (id.includes('node_modules')) {
+              if (id.includes('react') || id.includes('react-dom')) {
+                return 'vendor-react';
+              }
+              if (id.includes('@tanstack')) {
+                return 'vendor-tanstack';
+              }
+              if (id.includes('recharts') || id.includes('d3-')) {
+                return 'vendor-charts';
+              }
+              return 'vendor';
+            }
           }
         }
       }
