@@ -1,0 +1,93 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: 'Build type (debug or release)'
+        required: true
+        default: 'debug'
+        type: choice
+        options:
+          - debug
+          - release
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: 'feit-native/package-lock.json'
+    
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+    
+    - name: Install dependencies
+      working-directory: ./feit-native
+      run: |
+        npm ci --legacy-peer-deps || npm install --legacy-peer-deps
+    
+    - name: Build web application
+      working-directory: ./feit-native
+      run: |
+        npm run build
+    
+    - name: Setup Capacitor Android platform
+      working-directory: ./feit-native
+      run: |
+        npx cap add android || echo "Android platform already exists"
+        npx cap sync android
+    
+    - name: Make gradlew executable
+      working-directory: ./feit-native/android
+      run: chmod +x gradlew
+    
+    - name: Build Debug APK
+      if: github.event.inputs.build_type != 'release'
+      working-directory: ./feit-native/android
+      run: ./gradlew assembleDebug --stacktrace
+    
+    - name: Build Release APK
+      if: github.event.inputs.build_type == 'release'
+      working-directory: ./feit-native/android
+      run: ./gradlew assembleRelease --stacktrace
+    
+    - name: Upload Debug APK
+      if: github.event.inputs.build_type != 'release'
+      uses: actions/upload-artifact@v4
+      with:
+        name: feit-app-debug-${{ github.sha }}
+        path: feit-native/android/app/build/outputs/apk/debug/app-debug.apk
+        retention-days: 30
+    
+    - name: Upload Release APK
+      if: github.event.inputs.build_type == 'release'
+      uses: actions/upload-artifact@v4
+      with:
+        name: feit-app-release-${{ github.sha }}
+        path: feit-native/android/app/build/outputs/apk/release/app-release-unsigned.apk
+        retention-days: 30
+    
+    - name: Build summary
+      run: |
+        echo "### Build completed successfully! 🎉" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Build type:** ${{ github.event.inputs.build_type || 'debug' }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "Download your APK from the Artifacts section above." >> $GITHUB_STEP_SUMMARY

@@ -15,4 +15,24 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
+  vite: {
+    // Capacitor mobile build optimization
+    build: {
+      outDir: 'dist',
+      sourcemap: false,
+      minify: 'terser',
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            'react-vendor': ['react', 'react-dom'],
+            'capacitor': ['@capacitor/core', '@capacitor/app'],
+          }
+        }
+      }
+    },
+    server: {
+      port: 3000,
+      host: true
+    }
+  }
 });
