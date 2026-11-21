@@ -36,7 +36,7 @@ use the editor.
 - The opening splash lives in the root route component, so it plays only on a full app load and never on in-app navigation.
 - User-facing app name comes from copy, not code identifiers; internal `FitTrack*` names and `fittrack-*` storage keys stay unchanged so saved data keeps loading.
 - App state lives in one `FeitProvider` (src/lib/feit-store.tsx) mounted in the root route; pages read it with `useFeit()` so data isn't re-read on every navigation.
-- Logs stay in browser localStorage; only the routine schedule (for reminders) and push devices go to the backend, because the server must know reminder times while the app is closed.
+- Logs live in browser localStorage and, when signed in, are mirrored to the `user_data` table (one JSON row per user, newest copy wins, first sign-in on a device merges both) so every device gets them; photos stay on the device.
 - Routine reminders: a managed 15-minute schedule calls /api/public/jobs/routine-reminders, which sends web push signed by a server-generated key kept in a service-role-only table; routine times use quarter hours to match that cadence.
 - The push worker (public/push-sw.js) uses scope /push/ and never caches pages, so it can't serve stale app files.
 - Workout photos are stored in IndexedDB (src/lib/photo-store.ts), not localStorage, because images exceed its size limit.

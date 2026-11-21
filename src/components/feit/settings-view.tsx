@@ -108,12 +108,13 @@ function Reminders() {
 }
 
 function Account() {
-  const { session, authReady, notify } = useFeit();
+  const { session, authReady, notify, sync } = useFeit();
+  const syncText = { off: "", syncing: "Saving your logs to your account…", synced: "Your logs are saved to your account and show on every device you sign in on.", error: "Couldn't reach your account — logs are safe on this device and will save when you're back online." }[sync];
   return (
     <Card className="p-5 sm:p-6">
-      <CardTitle icon={UserRound} title="Account" hint="Needed for the AI coach, lessons and reminders. Your logs stay on this device." />
+      <CardTitle icon={UserRound} title="Account" hint="Sign in to save your logs to your account and use the AI coach, lessons and reminders." />
       {!authReady ? null : session ? (
-        <div className="flex flex-wrap items-center justify-between gap-3"><p className="text-sm">Signed in as <strong>{session.user.email}</strong></p><Button variant="outline" size="sm" onClick={async () => { await supabase.auth.signOut(); notify("Signed out."); }}><LogOut size={15} />Sign out</Button></div>
+        <div className="flex flex-wrap items-center justify-between gap-3"><p className="text-sm">Signed in as <strong>{session.user.email}</strong></p><Button variant="outline" size="sm" onClick={async () => { await supabase.auth.signOut(); notify("Signed out."); }}><LogOut size={15} />Sign out</Button>{syncText && <p className="w-full text-xs text-muted-foreground">{syncText}</p>}</div>
       ) : (
         <div className="flex flex-wrap items-center justify-between gap-3"><p className="text-sm text-muted-foreground">Not signed in on this device. The installed app has its own sign-in, separate from your browser.</p><Button asChild size="sm"><Link to="/auth">Sign in</Link></Button></div>
       )}
