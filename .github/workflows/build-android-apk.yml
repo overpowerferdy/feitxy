@@ -42,15 +42,67 @@ jobs:
     - name: Build web application
       run: |
         npm run build
-        echo "Build completed, checking output directories..."
-        echo "=== Checking dist ==="
-        ls -la dist/ 2>/dev/null || echo "No dist directory"
-        echo "=== Checking .output/public ==="
-        ls -la .output/public/ 2>/dev/null || echo "No .output/public directory"
-        echo "=== Checking .output ==="
-        ls -la .output/ 2>/dev/null || echo "No .output directory"
-        echo "=== Root directory ==="
-        ls -la
+        echo "Build completed."
+        
+    - name: Prepare web assets for Capacitor
+      run: |
+        # TanStack Start outputs to .output/public
+        # For Capacitor we need index.html - create it from the SSR build
+        mkdir -p dist
+        
+        if [ -d ".output/public" ]; then
+          # Copy all public assets
+          cp -r .output/public/* dist/
+          
+          echo "Copied .output/public to dist"
+          ls -la dist/
+          
+          # Check if index.html exists
+          if [ ! -f "dist/index.html" ]; then
+            echo "No index.html - TanStack Start SSR build detected"
+            echo "Creating index.html that loads the client bundle..."
+            
+            # Find the main JS and CSS files
+            JS_FILE=$(ls dist/assets/index-*.js 2>/dev/null | head -1)
+            CSS_FILE=$(ls dist/assets/styles-*.css 2>/dev/null | head -1)
+            
+            if [ -n "$JS_FILE" ]; then
+              JS_NAME=$(basename "$JS_FILE")
+              CSS_NAME=$(basename "$CSS_FILE" 2>/dev/null)
+              
+              cat > dist/index.html << HTMLEOF
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+          <meta name="theme-color" content="#113b22">
+          <title>Feit</title>
+          <link rel="stylesheet" href="/assets/${CSS_NAME}">
+          <link rel="icon" href="/favicon.png">
+        </head>
+        <body>
+          <div id="root"></div>
+          <script type="module" src="/assets/${JS_NAME}"></script>
+        </body>
+        </html>
+        HTMLEOF
+              echo "Created index.html"
+            else
+              echo "ERROR: Could not find client bundle"
+              ls -la dist/assets/
+              exit 1
+            fi
+          fi
+          
+          echo "Final dist contents:"
+          ls -la dist/
+          cat dist/index.html
+        else
+          echo "ERROR: .output/public not found"
+          ls -la
+          exit 1
+        fi
     
     - name: Setup Capacitor Android platform
       run: |
