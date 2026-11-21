@@ -14,7 +14,7 @@ export default defineConfig({
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
     // nitro/vite builds from this
     server: { entry: "server" },
-    // Use static preset for Capacitor mobile builds
+    // Use static preset for Capacitor mobile builds - this creates a client-side only build
     preset: 'static',
   },
   vite: {
@@ -23,6 +23,15 @@ export default defineConfig({
       outDir: 'dist',
       sourcemap: false,
       minify: 'esbuild',
+      // Ensure proper chunking for mobile
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            'vendor-react': ['react', 'react-dom'],
+            'vendor-tanstack': ['@tanstack/react-router', '@tanstack/react-query'],
+          }
+        }
+      }
     },
     server: {
       port: 3000,

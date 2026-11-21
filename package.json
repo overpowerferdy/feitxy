@@ -7,6 +7,8 @@
     "dev": "vite dev",
     "build": "vite build",
     "build:dev": "vite build --mode development",
+    "build:capacitor": "vite build && node scripts/build-capacitor.js",
+    "build:icons": "node scripts/generate-android-icons.js",
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write .",
@@ -18,7 +20,7 @@
     "cap:sync": "cap sync",
     "cap:open:android": "cap open android",
     "cap:open:ios": "cap open ios",
-    "build:mobile": "npm run build && cap sync",
+    "build:mobile": "npm run build:capacitor && npm run build:icons && cap sync",
     "android": "npm run build:mobile && cap open android",
     "ios": "npm run build:mobile && cap open ios"
   },

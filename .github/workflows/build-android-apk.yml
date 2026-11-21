@@ -39,95 +39,19 @@ jobs:
       run: |
         npm install --legacy-peer-deps --no-audit --no-fund
     
-    - name: Build web application
+    - name: Build web application for Capacitor
       run: |
-        npm run build
-        echo "Build completed."
-        
-    - name: Prepare web assets for Capacitor
-      run: |
-        # TanStack Start outputs to .output/public but without index.html
-        # We need to create index.html that loads the client bundle
-        
-        mkdir -p dist
-        
-        if [ -d ".output/public" ]; then
-          cp -r .output/public/* dist/
-          echo "Copied .output/public to dist"
-        fi
-        
-        # Find the client bundle files
-        JS_FILE=$(ls dist/assets/index-*.js 2>/dev/null | head -1 || ls dist/assets/client-*.js 2>/dev/null | head -1)
-        CSS_FILE=$(ls dist/assets/styles-*.css 2>/dev/null | head -1)
-        
-        if [ -z "$JS_FILE" ]; then
-          echo "ERROR: Could not find client JS bundle"
-          ls -la dist/assets/
-          exit 1
-        fi
-        
-        JS_NAME=$(basename "$JS_FILE")
-        CSS_NAME=$(basename "$CSS_FILE" 2>/dev/null)
-        
-        echo "Found JS: $JS_NAME"
-        echo "Found CSS: $CSS_NAME"
-        
-        # Create index.html with proper paths for Capacitor
-        # Use relative paths (assets/ not /assets/)
-        cat > dist/index.html << HTMLEOF
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-          <meta charset="UTF-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-          <meta name="theme-color" content="#113b22">
-          <meta name="apple-mobile-web-app-capable" content="yes">
-          <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-          <title>Feit</title>
-          <link rel="icon" href="favicon.png">
-          <link rel="apple-touch-icon" href="apple-touch-icon.png">
-          <link rel="manifest" href="manifest.webmanifest">
-        HTMLEOF
-        
-        if [ -n "$CSS_NAME" ]; then
-          echo "  <link rel=\"stylesheet\" href=\"assets/$CSS_NAME\">" >> dist/index.html
-        fi
-        
-        cat >> dist/index.html << HTMLEOF
-        </head>
-        <body>
-          <div id="root"></div>
-          <script type="module" src="assets/$JS_NAME"></script>
-        </body>
-        </html>
-        HTMLEOF
-        
-        echo "=== Created index.html ==="
-        cat dist/index.html
-        
-        echo "=== Final dist contents ==="
-        ls -la dist/
+        npm run build:capacitor
+        echo "Capacitor build completed."
     
     - name: Setup Capacitor Android platform
       run: |
         npx cap add android || echo "Android platform already exists"
         
-        # Copy app icons to Android resources
-        mkdir -p android/app/src/main/res/mipmap-mdpi
-        mkdir -p android/app/src/main/res/mipmap-hdpi
-        mkdir -p android/app/src/main/res/mipmap-xhdpi
-        mkdir -p android/app/src/main/res/mipmap-xxhdpi
-        mkdir -p android/app/src/main/res/mipmap-xxxhdpi
+        # Generate Android icons
+        npm run build:icons
         
-        # Use the PWA icons for Android
-        cp dist/icon-192.png android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png 2>/dev/null || true
-        cp dist/icon-192.png android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png 2>/dev/null || true
-        cp dist/icon-512.png android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png 2>/dev/null || true
-        
-        # Also create round icons
-        cp dist/icon-192.png android/app/src/main/res/mipmap-xxhdpi/ic_launcher_round.png 2>/dev/null || true
-        cp dist/icon-512.png android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png 2>/dev/null || true
-        
+        # Sync Capacitor
         npx cap sync android --deployment
     
     - name: Make gradlew executable
