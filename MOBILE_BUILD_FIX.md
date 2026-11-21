@@ -1,5 +1,7 @@
 # 📱 Mobile Build Fix - White Screen & Icon Issues
 
+> **UPDATE (real white-screen root cause):** The hand-written `index.html` with `<div id="root"></div>` was the actual cause of the blank page. TanStack Start's client bundle calls `hydrateRoot(document, ...)`, so it needs the real server-rendered SPA shell. The build now enables `tanstackStart.spa.enabled` (generating `.output/public/_shell.html`) and `scripts/build-capacitor.js` copies that shell to `dist/index.html`. Verified in a headless browser: the old HTML produced 0 rendered elements; the SPA shell produced the full UI.
+
 ## 🐛 Problems Identified
 
 Your APK was showing a white screen and wrong icons due to three issues:
@@ -127,21 +129,7 @@ android/
 ```bash
 cat dist/index.html
 ```
-Should look like:
-```html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0...">
-  <link rel="stylesheet" href="/assets/styles-[hash].css">
-</head>
-<body>
-  <div id="root"></div>
-  <script type="module" src="/assets/client-[hash].js"></script>
-</body>
-</html>
-```
+It must be the TanStack Start SPA shell (copied from `.output/public/_shell.html`): a full `<!DOCTYPE html><html>...<body>...<script type="module" src="/assets/index-[hash].js">` document with the dehydrated `$TSR`/`$_TSR` data scripts. It should NOT be a hand-written page with an empty `<div id="root"></div>` — that gives React nothing to hydrate and renders a white screen.
 
 ### Check Android Icons
 ```bash

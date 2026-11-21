@@ -16,6 +16,11 @@ export default defineConfig({
     server: { entry: "server" },
     // Use static preset for Capacitor mobile builds - this creates a client-side only build
     preset: 'static',
+    // Generate the real SPA shell (_shell.html). Capacitor needs this server-rendered
+    // document because the TanStack client bundle calls hydrateRoot(document, ...).
+    // Without it the WebView has nothing to hydrate and shows an empty white page.
+    spa: { enabled: true },
+    spa: { enabled: true },
   },
   vite: {
     // Capacitor mobile build optimization

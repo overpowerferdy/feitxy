@@ -51,59 +51,30 @@ async function copyOutputToDist() {
   }
 }
 
-async function findAssetFile(pattern) {
-  const assetsDir = path.join(distDir, 'assets');
-  const files = await fs.readdir(assetsDir);
-  return files.find(file => file.match(pattern));
-}
-
 async function generateIndexHtml() {
-  console.log('📝 Generating Capacitor-compatible index.html...');
-  
-  // Find the generated JS and CSS files
-  const jsFile = await findAssetFile(/^client-.*\.js$/) || 
-                 await findAssetFile(/^index-.*\.js$/);
-  const cssFile = await findAssetFile(/^styles-.*\.css$/);
+  console.log('📝 Installing the TanStack Start SPA shell as index.html...');
 
-  if (!jsFile) {
-    throw new Error('❌ Could not find client JS bundle in dist/assets/');
+  // TanStack Start's client bundle calls hydrateRoot(document, ...), so the WebView
+  // must receive the real server-rendered document shell. Hand-writing an empty
+  // <div id="root"> page gives React nothing to hydrate and results in a white screen.
+  const shellPath = path.join(outputDir, '_shell.html');
+
+  let html;
+  try {
+    html = await fs.readFile(shellPath, 'utf-8');
+  } catch {
+    throw new Error(
+      '❌ .output/public/_shell.html was not generated. ' +
+        'Make sure tanstackStart.spa.enabled is true in vite.config.ts and rebuild.'
+    );
   }
 
-  console.log(`   Found JS: ${jsFile}`);
-  if (cssFile) console.log(`   Found CSS: ${cssFile}`);
-
-  // Generate the HTML
-  const html = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <meta name="theme-color" content="#113b22">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Feit">
-  <title>Feit</title>
-  
-  <!-- Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap">
-  
-  <!-- Icons -->
-  <link rel="icon" href="favicon.png" type="image/png">
-  <link rel="apple-touch-icon" href="apple-touch-icon.png">
-  <link rel="manifest" href="manifest.webmanifest">
-  
-  <!-- Styles -->
-  ${cssFile ? `<link rel="stylesheet" href="assets/${cssFile}">` : ''}
-</head>
-<body>
-  <div id="root"></div>
-  <script type="module" src="assets/${jsFile}"></script>
-</body>
-</html>`;
+  if (!html.includes('<html') || !html.includes('/assets/') || !html.includes('index-')) {
+    throw new Error('❌ The generated SPA shell is invalid; refusing to write a blank index.html.');
+  }
 
   await fs.writeFile(path.join(distDir, 'index.html'), html, 'utf-8');
-  console.log('✅ index.html generated successfully');
+  console.log('✅ index.html created from the TanStack SPA shell');
 }
 
 async function copyPublicAssets() {
@@ -149,6 +120,12 @@ async function verifyBuild() {
     } catch {
       console.warn(`   ⚠️  Missing: ${file}`);
     }
+  }
+
+  // A page with no client script can only ever render white on a device.
+  const indexHtml = await fs.readFile(path.join(distDir, 'index.html'), 'utf-8');
+  if (!indexHtml.includes('<script type="module"') || !indexHtml.includes('<body>')) {
+    throw new Error('❌ dist/index.html has no client bundle; the app would show a white screen.');
   }
 
   // Check assets folder
