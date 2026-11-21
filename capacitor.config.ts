@@ -3,7 +3,7 @@ import { CapacitorConfig } from '@capacitor/cli';
 const config: CapacitorConfig = {
   appId: 'com.feit.app',
   appName: 'Feit',
-  webDir: 'dist',
+  webDir: '.output/public',
   server: {
     androidScheme: 'https'
   },

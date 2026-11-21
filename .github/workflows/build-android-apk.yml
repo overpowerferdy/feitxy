@@ -43,33 +43,12 @@ jobs:
       run: |
         npm run build
         echo "Build completed, checking output..."
-        
-    - name: Prepare dist for Capacitor
-      run: |
-        echo "Current directory contents:"
-        ls -la
-        
-        # TanStack Start outputs to .output/public
-        if [ -d ".output/public" ]; then
-          echo "✅ Found .output/public, copying to dist..."
-          mkdir -p dist
-          cp -rv .output/public/* dist/
-          echo "Dist contents:"
-          ls -la dist/
-          echo "Checking for index.html:"
-          test -f dist/index.html && echo "✅ index.html exists" || echo "❌ index.html missing"
-        elif [ -d "dist" ]; then
-          echo "✅ Dist directory already exists"
-          ls -la dist/
-        else
-          echo "❌ No build output found"
-          exit 1
-        fi
+        ls -la .output/public/ || echo "No .output/public found"
     
     - name: Setup Capacitor Android platform
       run: |
         npx cap add android || echo "Android platform already exists"
-        npx cap sync android
+        npx cap sync android --deployment
     
     - name: Make gradlew executable
       working-directory: ./android
