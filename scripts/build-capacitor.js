@@ -89,16 +89,16 @@ async function generateIndexHtml() {
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap">
   
   <!-- Icons -->
-  <link rel="icon" href="/favicon.png" type="image/png">
-  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" href="favicon.png" type="image/png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="manifest" href="manifest.webmanifest">
   
   <!-- Styles -->
-  ${cssFile ? `<link rel="stylesheet" href="/assets/${cssFile}">` : ''}
+  ${cssFile ? `<link rel="stylesheet" href="assets/${cssFile}">` : ''}
 </head>
 <body>
   <div id="root"></div>
-  <script type="module" src="/assets/${jsFile}"></script>
+  <script type="module" src="assets/${jsFile}"></script>
 </body>
 </html>`;
 
