@@ -36,34 +36,30 @@ jobs:
         java-version: '17'
     
     - name: Install dependencies
-      working-directory: ./feit-native
       run: |
         npm install --legacy-peer-deps --no-audit --no-fund
     
     - name: Build web application
-      working-directory: ./feit-native
       run: |
-        npm run build || echo "Build failed but continuing..."
-      continue-on-error: false
+        npm run build
     
     - name: Setup Capacitor Android platform
-      working-directory: ./feit-native
       run: |
-        npx cap add android --confirm || echo "Android platform already exists"
-        npx cap sync android --inline
+        npx cap add android || echo "Android platform already exists"
+        npx cap sync android
     
     - name: Make gradlew executable
-      working-directory: ./feit-native/android
+      working-directory: ./android
       run: chmod +x gradlew
     
     - name: Build Debug APK
       if: github.event.inputs.build_type != 'release'
-      working-directory: ./feit-native/android
+      working-directory: ./android
       run: ./gradlew assembleDebug --stacktrace
     
     - name: Build Release APK
       if: github.event.inputs.build_type == 'release'
-      working-directory: ./feit-native/android
+      working-directory: ./android
       run: ./gradlew assembleRelease --stacktrace
     
     - name: Upload Debug APK
@@ -71,7 +67,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: feit-app-debug-${{ github.sha }}
-        path: feit-native/android/app/build/outputs/apk/debug/app-debug.apk
+        path: android/app/build/outputs/apk/debug/app-debug.apk
         retention-days: 30
     
     - name: Upload Release APK
@@ -79,7 +75,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: feit-app-release-${{ github.sha }}
-        path: feit-native/android/app/build/outputs/apk/release/app-release-unsigned.apk
+        path: android/app/build/outputs/apk/release/app-release-unsigned.apk
         retention-days: 30
     
     - name: Build summary
