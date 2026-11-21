@@ -4,7 +4,7 @@
  */
 
 // Use environment variable or fallback to deployed server
-const API_BASE = import.meta.env.VITE_API_BASE || 'https://feitxy.lovable.app';
+export const API_BASE = import.meta.env.VITE_API_BASE || 'https://feitxy.lovable.app';
 
 // Get auth token from Supabase session
 async function getAuthToken(): Promise<string | null> {
@@ -18,7 +18,7 @@ async function getAuthToken(): Promise<string | null> {
 }
 
 // Generic API call helper
-async function apiCall<T>(
+export async function apiCall<T>(
   endpoint: string,
   data: Record<string, unknown>
 ): Promise<T> {
@@ -41,6 +41,3 @@ async function apiCall<T>(
 
   return response.json();
 }
-
-// Export the API base URL for other uses
-export { API_BASE };
