@@ -20,7 +20,7 @@
     "cap:sync": "cap sync",
     "cap:open:android": "cap open android",
     "cap:open:ios": "cap open ios",
-    "build:mobile": "npm run build:capacitor && npm run build:icons && cap sync",
+    "build:mobile": "npm run build:capacitor && npm run build:icons && node scripts/add-android-deeplink.js && cap sync",
     "android": "npm run build:mobile && cap open android",
     "ios": "npm run build:mobile && cap open ios"
   },
@@ -30,6 +30,7 @@
   "dependencies": {
     "@capacitor/android": "^6.2.0",
     "@capacitor/app": "^6.0.0",
+    "@capacitor/browser": "^6.0.4",
     "@capacitor/core": "^6.2.0",
     "@capacitor/device": "^6.0.0",
     "@capacitor/geolocation": "^6.0.0",

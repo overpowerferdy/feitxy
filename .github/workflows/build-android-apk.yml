@@ -47,10 +47,11 @@ jobs:
     - name: Setup Capacitor Android platform
       run: |
         npx cap add android || echo "Android platform already exists"
-        
-        # Generate Android icons
+
+        # Generate Android icons and register the Google sign-in callback
         npm run build:icons
-        
+        node scripts/add-android-deeplink.js
+
         # Sync Capacitor
         npx cap sync android --deployment
     

@@ -11,6 +11,7 @@ import {
 import { useEffect, useState, type ReactNode } from "react";
 import splashLogo from "@/assets/fittrack-logo.png";
 import { FeitProvider } from "@/lib/feit-store";
+import { setupNativeAuthCallback } from "@/lib/lovable-auth";
 import { ReminderSync } from "@/components/feit/reminder-sync";
 
 import appCss from "../styles.css?url";
@@ -133,6 +134,10 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const [showSplash, setShowSplash] = useState(true);
+
+  useEffect(() => {
+    setupNativeAuthCallback();
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
