@@ -24,13 +24,20 @@ export async function apiCall<T>(
 ): Promise<T> {
   const token = await getAuthToken();
   
+  // Components call these wrappers through useServerFn, which passes
+  // arguments as { data: {...} }. Send the inner payload to the HTTP API.
+  const payload =
+    'data' in data && data.data && typeof data.data === 'object'
+      ? (data.data as Record<string, unknown>)
+      : data;
+
   const response = await fetch(`${API_BASE}${endpoint}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
-    body: JSON.stringify(data),
+    body: JSON.stringify(payload),
     credentials: 'include',
   });
 
