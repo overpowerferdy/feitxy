@@ -14,6 +14,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as HabitsRouteImport } from './routes/habits'
 import { Route as JournalRouteImport } from './routes/journal'
 import { Route as LearningRouteImport } from './routes/learning'
+import { Route as MobileAuthCallbackRouteImport } from './routes/mobile-auth-callback'
 import { Route as ProgressRouteImport } from './routes/progress'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as WellnessRouteImport } from './routes/wellness'
@@ -49,6 +50,11 @@ const JournalRoute = JournalRouteImport.update({
 const LearningRoute = LearningRouteImport.update({
   id: '/learning',
   path: '/learning',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MobileAuthCallbackRoute = MobileAuthCallbackRouteImport.update({
+  id: '/mobile-auth-callback',
+  path: '/mobile-auth-callback',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProgressRoute = ProgressRouteImport.update({
@@ -114,6 +120,7 @@ export interface FileRoutesByFullPath {
   '/habits': typeof HabitsRoute
   '/journal': typeof JournalRoute
   '/learning': typeof LearningRoute
+  '/mobile-auth-callback': typeof MobileAuthCallbackRoute
   '/progress': typeof ProgressRoute
   '/settings': typeof SettingsRoute
   '/wellness': typeof WellnessRoute
@@ -132,6 +139,7 @@ export interface FileRoutesByTo {
   '/habits': typeof HabitsRoute
   '/journal': typeof JournalRoute
   '/learning': typeof LearningRoute
+  '/mobile-auth-callback': typeof MobileAuthCallbackRoute
   '/progress': typeof ProgressRoute
   '/settings': typeof SettingsRoute
   '/wellness': typeof WellnessRoute
@@ -151,6 +159,7 @@ export interface FileRoutesById {
   '/habits': typeof HabitsRoute
   '/journal': typeof JournalRoute
   '/learning': typeof LearningRoute
+  '/mobile-auth-callback': typeof MobileAuthCallbackRoute
   '/progress': typeof ProgressRoute
   '/settings': typeof SettingsRoute
   '/wellness': typeof WellnessRoute
@@ -171,6 +180,7 @@ export interface FileRouteTypes {
     | '/habits'
     | '/journal'
     | '/learning'
+    | '/mobile-auth-callback'
     | '/progress'
     | '/settings'
     | '/wellness'
@@ -189,6 +199,7 @@ export interface FileRouteTypes {
     | '/habits'
     | '/journal'
     | '/learning'
+    | '/mobile-auth-callback'
     | '/progress'
     | '/settings'
     | '/wellness'
@@ -207,6 +218,7 @@ export interface FileRouteTypes {
     | '/habits'
     | '/journal'
     | '/learning'
+    | '/mobile-auth-callback'
     | '/progress'
     | '/settings'
     | '/wellness'
@@ -226,6 +238,7 @@ export interface RootRouteChildren {
   HabitsRoute: typeof HabitsRoute
   JournalRoute: typeof JournalRoute
   LearningRoute: typeof LearningRoute
+  MobileAuthCallbackRoute: typeof MobileAuthCallbackRoute
   ProgressRoute: typeof ProgressRoute
   SettingsRoute: typeof SettingsRoute
   WellnessRoute: typeof WellnessRoute
@@ -274,6 +287,13 @@ declare module '@tanstack/react-router' {
       path: '/learning'
       fullPath: '/learning'
       preLoaderRoute: typeof LearningRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mobile-auth-callback': {
+      id: '/mobile-auth-callback'
+      path: '/mobile-auth-callback'
+      fullPath: '/mobile-auth-callback'
+      preLoaderRoute: typeof MobileAuthCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/progress': {
@@ -362,6 +382,7 @@ const rootRouteChildren: RootRouteChildren = {
   HabitsRoute: HabitsRoute,
   JournalRoute: JournalRoute,
   LearningRoute: LearningRoute,
+  MobileAuthCallbackRoute: MobileAuthCallbackRoute,
   ProgressRoute: ProgressRoute,
   SettingsRoute: SettingsRoute,
   WellnessRoute: WellnessRoute,

@@ -10,7 +10,8 @@ const API_BASE = import.meta.env.VITE_API_BASE || 'https://feitxy.lovable.app';
 // /auth/v1/authorize endpoint has no Google secret configured here.
 // Google also blocks OAuth inside a WebView, so the native app opens the broker
 // in the system browser and receives the result through a deep link.
-const REDIRECT_URL = 'com.feit.app://auth/callback';
+const REDIRECT_URL = `${API_BASE}/mobile-auth-callback`;
+const DEEP_LINK = 'com.feit.app://auth/callback';
 const STATE_KEY = 'feit-oauth-state';
 
 const webAuth = createLovableAuth({ oauthBrokerUrl: '/~oauth/initiate' });
@@ -30,7 +31,7 @@ export function setupNativeAuthCallback() {
   callbackSetup = true;
 
   App.addListener('appUrlOpen', async ({ url }) => {
-    if (!url.startsWith(REDIRECT_URL)) return;
+    if (!url.startsWith(DEEP_LINK)) return;
 
     try {
       const parsed = new URL(url);
