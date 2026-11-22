@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { authenticateRequest, aiErrorResponse, askJson, readJson } from '@/lib/ai-api';
+import { authenticateRequest, aiErrorResponse, askJson, corsHandlers, readJson } from '@/lib/ai-api';
 
 const str = { type: 'string' };
 const strArr = { type: 'array', items: str };
@@ -12,8 +12,7 @@ const projectSchema = {
 
 export const Route = createFileRoute('/api/learn/generate-project')({
   server: {
-    handlers: {
-      POST: async ({ request }) => {
+    handlers: corsHandlers(async ({ request }) => {
         const authError = await authenticateRequest(request);
         if (authError) return authError;
 
@@ -39,7 +38,6 @@ export const Route = createFileRoute('/api/learn/generate-project')({
         } catch (error) {
           return aiErrorResponse(error);
         }
-      },
-    },
+      }),
   },
 });

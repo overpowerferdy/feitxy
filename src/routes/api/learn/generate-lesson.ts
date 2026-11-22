@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { authenticateRequest, aiErrorResponse, askJson, readJson } from '@/lib/ai-api';
+import { authenticateRequest, aiErrorResponse, askJson, corsHandlers, readJson } from '@/lib/ai-api';
 import type { Lesson } from '@/lib/fittrack-data';
 
 const str = { type: 'string' };
@@ -54,8 +54,7 @@ function languageFor(title: string) {
 
 export const Route = createFileRoute('/api/learn/generate-lesson')({
   server: {
-    handlers: {
-      POST: async ({ request }) => {
+    handlers: corsHandlers(async ({ request }) => {
         const authError = await authenticateRequest(request);
         if (authError) return authError;
 
@@ -77,7 +76,6 @@ export const Route = createFileRoute('/api/learn/generate-lesson')({
         } catch (error) {
           return aiErrorResponse(error);
         }
-      },
-    },
+      }),
   },
 });

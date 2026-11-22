@@ -7,6 +7,48 @@ import type { Database } from '@/integrations/supabase/types';
 
 const MODEL = 'openai/gpt-6-astra';
 
+const ALLOWED_ORIGINS = new Set([
+  'https://localhost',
+  'http://localhost',
+  'capacitor://localhost',
+  'https://feitxy.lovable.app',
+]);
+
+function corsHeaders(request?: Request): HeadersInit {
+  const origin = request?.headers.get('origin') ?? '';
+  const allowed =
+    origin && (ALLOWED_ORIGINS.has(origin) || origin.endsWith('.lovable.app'))
+      ? origin
+      : 'https://feitxy.lovable.app';
+  return {
+    'Access-Control-Allow-Origin': allowed,
+    'Access-Control-Allow-Headers': 'authorization, content-type',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Credentials': 'true',
+    Vary: 'Origin',
+  };
+}
+
+/** Wrap route handlers so the Capacitor WebView can call the API cross-origin. */
+export function corsHandlers(handler: (ctx: { request: Request }) => Promise<Response>) {
+  return {
+    OPTIONS: ({ request }: { request: Request }) =>
+      new Response(null, { status: 204, headers: corsHeaders(request) }),
+    POST: async (ctx: { request: Request }) => {
+      const response = await handler(ctx);
+      const headers = new Headers(response.headers);
+      for (const [key, value] of Object.entries(corsHeaders(ctx.request))) {
+        headers.set(key, value as string);
+      }
+      return new Response(response.body, {
+        status: response.status,
+        statusText: response.statusText,
+        headers,
+      });
+    },
+  };
+}
+
 function json(message: string, status: number) {
   return Response.json({ message }, { status });
 }

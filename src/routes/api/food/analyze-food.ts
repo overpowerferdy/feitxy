@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { authenticateRequest, aiErrorResponse, askJson, readJson } from '@/lib/ai-api';
+import { authenticateRequest, aiErrorResponse, askJson, corsHandlers, readJson } from '@/lib/ai-api';
 import type { FoodAnalysis } from '@/lib/food.functions';
 
 const num = { type: 'number' };
@@ -29,8 +29,7 @@ const schema = {
 
 export const Route = createFileRoute('/api/food/analyze-food')({
   server: {
-    handlers: {
-      POST: async ({ request }) => {
+    handlers: corsHandlers(async ({ request }) => {
         const authError = await authenticateRequest(request);
         if (authError) return authError;
 
@@ -62,7 +61,6 @@ export const Route = createFileRoute('/api/food/analyze-food')({
         } catch (error) {
           return aiErrorResponse(error);
         }
-      },
-    },
+      }),
   },
 });
