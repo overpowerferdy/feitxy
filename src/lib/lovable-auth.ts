@@ -6,15 +6,23 @@ import { supabase } from '@/integrations/supabase/client';
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'https://feitxy.lovable.app';
 
-// Google refuses to authorize inside a WebView ("disallowed_useragent"), and
-// Lovable's broker rejects the WebView origin (https://localhost) as a redirect
-// URI. In the native app we therefore use the system browser + a deep link back
-// into the app instead of the embedded broker flow.
+// This project uses Lovable's managed Google OAuth broker. Supabase's own
+// /auth/v1/authorize endpoint has no Google secret configured here.
+// Google also blocks OAuth inside a WebView, so the native app opens the broker
+// in the system browser and receives the result through a deep link.
 const REDIRECT_URL = 'com.feit.app://auth/callback';
+const STATE_KEY = 'feit-oauth-state';
 
 const webAuth = createLovableAuth({ oauthBrokerUrl: '/~oauth/initiate' });
 
 let callbackSetup = false;
+
+function randomState() {
+  const bytes = new Uint8Array(16);
+  if (typeof crypto !== 'undefined' && crypto.getRandomValues) crypto.getRandomValues(bytes);
+  else for (let i = 0; i < bytes.length; i += 1) bytes[i] = Math.floor(Math.random() * 256);
+  return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
+}
 
 /** Register once at app startup so the callback also works after a cold start. */
 export function setupNativeAuthCallback() {
@@ -27,22 +35,30 @@ export function setupNativeAuthCallback() {
     try {
       const parsed = new URL(url);
       const hashParams = new URLSearchParams(parsed.hash.replace(/^#/, ''));
-      const code = parsed.searchParams.get('code') || hashParams.get('code');
-      const accessToken = hashParams.get('access_token') || parsed.searchParams.get('access_token');
-      const refreshToken = hashParams.get('refresh_token') || parsed.searchParams.get('refresh_token');
-      const error = parsed.searchParams.get('error') || hashParams.get('error');
+      const query = parsed.searchParams;
+      const code = query.get('code') || hashParams.get('code');
+      const accessToken = hashParams.get('access_token') || query.get('access_token');
+      const refreshToken = hashParams.get('refresh_token') || query.get('refresh_token');
+      const state = hashParams.get('state') || query.get('state');
+      const error = query.get('error') || hashParams.get('error');
+      const expectedState = localStorage.getItem(STATE_KEY);
 
-      if (error) {
+      if (expectedState && state && state !== expectedState) {
+        console.error('[auth] OAuth state mismatch');
+      } else if (error) {
         console.error('[auth] OAuth error:', error);
-      } else if (code) {
-        const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
-        if (exchangeError) console.error('[auth] Code exchange failed:', exchangeError.message);
-      } else if (accessToken && refreshToken) {
-        const { error: sessionError } = await supabase.auth.setSession({
-          access_token: accessToken,
-          refresh_token: refreshToken,
-        });
-        if (sessionError) console.error('[auth] Session save failed:', sessionError.message);
+      } else {
+        if (expectedState) localStorage.removeItem(STATE_KEY);
+        if (code) {
+          const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+          if (exchangeError) console.error('[auth] Code exchange failed:', exchangeError.message);
+        } else if (accessToken && refreshToken) {
+          const { error: sessionError } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          });
+          if (sessionError) console.error('[auth] Session save failed:', sessionError.message);
+        }
       }
 
       await Browser.close().catch(() => undefined);
@@ -55,19 +71,17 @@ export function setupNativeAuthCallback() {
 }
 
 async function signInNative() {
-  const { data, error } = await supabase.auth.signInWithOAuth({
+  const state = randomState();
+  localStorage.setItem(STATE_KEY, state);
+  const params = new URLSearchParams({
     provider: 'google',
-    options: {
-      redirectTo: REDIRECT_URL,
-      skipBrowserRedirect: true,
-      // Request an authorization code so the deep link stays short and safe.
-      queryParams: { prompt: 'select_account' },
-    },
+    redirect_uri: REDIRECT_URL,
+    state,
   });
-  if (error) return { error };
-  if (!data?.url) return { error: new Error('Google sign-in did not return a URL.') };
-
-  await Browser.open({ url: data.url, toolbarColor: '#113b22' });
+  await Browser.open({
+    url: `${API_BASE}/~oauth/initiate?${params.toString()}`,
+    toolbarColor: '#113b22',
+  });
   return { redirected: true as const };
 }
 
@@ -91,6 +105,3 @@ async function signInWeb() {
 export async function signInWithGoogle() {
   return Capacitor.isNativePlatform() ? signInNative() : signInWeb();
 }
-
-// Kept for any existing web-only callers that still reference API_BASE.
-export const feitApiBase = API_BASE;
