@@ -4,7 +4,7 @@ import { Capacitor } from '@capacitor/core';
 import { createLovableAuth } from '@lovable.dev/cloud-auth-js';
 import { supabase } from '@/integrations/supabase/client';
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'https://feitxy.lovable.app';
+const API_BASE = import.meta.env['VITE_API_BASE'] || 'https://feitxy.lovable.app';
 
 // This project uses Lovable's managed Google OAuth broker. Supabase's own
 // /auth/v1/authorize endpoint has no Google secret configured here.

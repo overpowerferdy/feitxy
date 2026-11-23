@@ -17,8 +17,8 @@ export type FoodAnalysis = {
 };
 
 // Food analysis API endpoint
-export const analyzeFood = (data: {
+export const analyzeFood = (data: { data: {
   image: string;
   note?: string;
-}) => 
+} }) => 
   apiCall<FoodAnalysis>("/api/food/analyze-food", data);

@@ -4,7 +4,7 @@
  */
 
 // Use environment variable or fallback to deployed server
-export const API_BASE = import.meta.env.VITE_API_BASE || 'https://feitxy.lovable.app';
+export const API_BASE = import.meta.env['VITE_API_BASE'] || 'https://feitxy.lovable.app';
 
 // Get auth token from Supabase session
 async function getAuthToken(): Promise<string | null> {
@@ -27,8 +27,8 @@ export async function apiCall<T>(
   // Components call these wrappers through useServerFn, which passes
   // arguments as { data: {...} }. Send the inner payload to the HTTP API.
   const payload =
-    'data' in data && data.data && typeof data.data === 'object'
-      ? (data.data as Record<string, unknown>)
+    'data' in data && data['data'] && typeof data['data'] === 'object'
+      ? (data['data'] as Record<string, unknown>)
       : data;
 
   const response = await fetch(`${API_BASE}${endpoint}`, {

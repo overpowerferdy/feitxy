@@ -114,7 +114,7 @@ export async function askJson<T>(
   const res = await generateResponse({
     model: MODEL,
     instructions,
-    input,
+    input: input as never,
     max_output_tokens: maxOutputTokens,
     reasoning: { effort: 'low' },
     text: { format: { type: 'json_schema', name, strict: true, schema } },

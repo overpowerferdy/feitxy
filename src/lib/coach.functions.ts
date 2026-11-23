@@ -9,9 +9,9 @@ export type CoachReview = {
 };
 
 // Coach API endpoints
-export const reviewLogs = (data: {
+export const reviewLogs = (data: { data: {
   area: "workout" | "reading" | "roadmap";
   today: string;
   logs: string;
-}) => 
+} }) => 
   apiCall<CoachReview>("/api/coach/review-logs", data);

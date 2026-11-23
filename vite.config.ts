@@ -20,7 +20,6 @@ export default defineConfig({
     // document because the TanStack client bundle calls hydrateRoot(document, ...).
     // Without it the WebView has nothing to hydrate and shows an empty white page.
     spa: { enabled: true },
-    spa: { enabled: true },
   },
   vite: {
     // Capacitor mobile build optimization
@@ -45,6 +44,7 @@ export default defineConfig({
               }
               return 'vendor';
             }
+            return undefined;
           }
         }
       }

@@ -31,7 +31,7 @@ export function useNetworkStatus() {
       });
 
       return () => {
-        handler.remove();
+        void handler.then((h) => h.remove());
       };
     };
 
