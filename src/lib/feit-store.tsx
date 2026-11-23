@@ -26,6 +26,8 @@ export function withDefaults(data: FitTrackData): Required<FitTrackData> {
     ...data,
     rescheduledWorkouts: data.rescheduledWorkouts ?? {},
     steps: data.steps ?? [],
+    runs: data.runs ?? [],
+    runGoalKm: data.runGoalKm ?? 10,
     journal: data.journal ?? {},
     routine: data.routine?.length ? data.routine : defaultRoutine,
     routineDone: data.routineDone ?? {},

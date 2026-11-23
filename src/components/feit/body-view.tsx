@@ -1,14 +1,15 @@
 import { useState, type FormEvent } from "react";
-import { BedDouble, Footprints, Plus, Scale, Sunrise, Utensils, Wallet } from "lucide-react";
+import { Activity, BedDouble, Footprints, Plus, Scale, Sunrise, Utensils, Wallet } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardTitle, Empty, Field, LogRow, PageHeader, ProgressBar, Segmented, selectClass } from "@/components/feit/ui";
 import { addDays, canAddPurchase, estimateKm, minutesLabel, mondayOf, roundWeight, sleepBetween, SLEEP_TARGET_MINUTES, WEEKLY_FOOD_LIMIT, weeklySpending } from "@/lib/fittrack-data";
 import { fmtDate, fmtTime, newId, useFeit } from "@/lib/feit-store";
+import { RunSection } from "@/components/feit/run-tracker";
 import { FoodPhotoCard } from "@/components/feit/food-photo";
 
-type Tab = "steps" | "sleep" | "weight" | "food";
+type Tab = "run" | "steps" | "sleep" | "weight" | "food";
 const tooltipStyle = { background: "var(--color-card)", borderColor: "var(--color-border)", borderRadius: 10 };
 const tick = { fill: "var(--color-muted-foreground)", fontSize: 11 };
 
@@ -17,9 +18,10 @@ export function BodyView() {
   return (
     <div className="space-y-5">
       <PageHeader eyebrow="Take care of yourself" title="Body" subtitle="Steps, sleep, weight and food — log what really happened." />
-      <Segmented label="Body sections" value={tab} onChange={setTab} options={[{ value: "steps", label: "Steps", icon: Footprints }, { value: "sleep", label: "Sleep", icon: BedDouble }, { value: "weight", label: "Weight", icon: Scale }, { value: "food", label: "Food", icon: Utensils }]} />
+      <Segmented label="Body sections" value={tab} onChange={setTab} options={[{ value: "steps", label: "Steps", icon: Footprints }, { value: "run", label: "Run", icon: Activity }, { value: "sleep", label: "Sleep", icon: BedDouble }, { value: "weight", label: "Weight", icon: Scale }, { value: "food", label: "Food", icon: Utensils }]} />
       <div key={tab} className="feit-stagger space-y-5">
         {tab === "steps" && <StepsSection />}
+        {tab === "run" && <RunSection />}
         {tab === "sleep" && <SleepSection />}
         {tab === "weight" && <WeightSection />}
         {tab === "food" && <FoodSection />}

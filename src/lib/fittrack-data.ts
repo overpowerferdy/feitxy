@@ -7,6 +7,7 @@ export type CodingEntry = { id: string; date: string; minutes: number; note: str
 export type ReadingEntry = { id: string; date: string; pages: number; minutes: number; note: string };
 export type WorkoutEntry = { date: string; name: string; completed: string[]; coreDone: boolean; sets?: Record<string, number[]> };
 export type StepEntry = { id: string; date: string; steps: number; km: number };
+export type RunEntry = { id: string; date: string; km: number; seconds: number; steps: number; source: "gps" | "manual" };
 export type JournalEntry = { date: string; mood: Mood; text: string; updatedAt: string };
 export type Mood = "great" | "good" | "okay" | "low" | "rough";
 export type RoutineItem = { id: string; title: string; start: string; end?: string | undefined };
@@ -39,6 +40,8 @@ export interface FitTrackData {
   roadmap: Record<string, string[]>;
   rescheduledWorkouts?: Record<string, string>;
   steps?: StepEntry[];
+  runs?: RunEntry[];
+  runGoalKm?: number;
   journal?: Record<string, JournalEntry>;
   routine?: RoutineItem[];
   routineDone?: Record<string, string[]>;
@@ -311,4 +314,36 @@ export function topicKey(date: string, topic: string) {
 /** A topic counts as finished when the quiz has at least 2 right answers and the practice problem passed. */
 export function topicFinished(progress?: TopicProgress) {
   return (progress?.quizScore ?? 0) >= 2 && !!progress?.problemReview?.passed;
+}
+
+/** Great-circle distance between two GPS points, in km. */
+export function haversineKm(a: { lat: number; lon: number }, b: { lat: number; lon: number }) {
+  const r = (d: number) => (d * Math.PI) / 180;
+  const dLat = r(b.lat - a.lat), dLon = r(b.lon - a.lon);
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(r(a.lat)) * Math.cos(r(b.lat)) * Math.sin(dLon / 2) ** 2;
+  return 2 * 6371 * Math.asin(Math.sqrt(h));
+}
+
+/** Pace as m:ss per km, or "—" when distance is zero. */
+export function paceLabel(seconds: number, km: number) {
+  if (!(km > 0) || !(seconds > 0)) return "—";
+  const p = Math.round(seconds / km);
+  return `${Math.floor(p / 60)}:${String(p % 60).padStart(2, "0")} /km`;
+}
+
+export function durationLabel(seconds: number) {
+  const s = Math.max(0, Math.round(seconds));
+  const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
+  return h ? `${h}:${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}` : `${m}:${String(sec).padStart(2, "0")}`;
+}
+
+/** Running stride is longer than walking: ~0.65 × height. */
+export function estimateRunSteps(km: number, heightCm = HEIGHT_CM) {
+  if (!(km > 0)) return 0;
+  return Math.round((km * 100000) / (heightCm * 0.65));
+}
+
+export function weeklyRunKm(runs: RunEntry[], weekStart: string) {
+  const end = addDays(weekStart, 6);
+  return Math.round(runs.filter((r) => r.date >= weekStart && r.date <= end).reduce((t, r) => t + r.km, 0) * 100) / 100;
 }
