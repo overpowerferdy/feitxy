@@ -12,6 +12,8 @@ import { useEffect, useState, type ReactNode } from "react";
 import splashLogo from "@/assets/fittrack-logo.png";
 import { FeitProvider } from "@/lib/feit-store";
 import { setupNativeAuthCallback } from "@/lib/lovable-auth";
+import { Capacitor } from "@capacitor/core";
+import { SplashScreen } from "@capacitor/splash-screen";
 import { ReminderSync } from "@/components/feit/reminder-sync";
 
 import appCss from "../styles.css?url";
@@ -137,6 +139,7 @@ function RootComponent() {
 
   useEffect(() => {
     setupNativeAuthCallback();
+    if (Capacitor.isNativePlatform()) void SplashScreen.hide();
   }, []);
 
   return (

@@ -90,6 +90,30 @@ async function main() {
     console.log(`   ✓ ${folder}: ${launcherSize}px launcher, ${foregroundSize}px foreground`);
   }
 
+  // Splash screens: replace Capacitor's default blue logo with the Feit mark.
+  const splashSizes = {
+    'drawable-land-mdpi': [480, 320], 'drawable-land-hdpi': [800, 480],
+    'drawable-land-xhdpi': [1280, 720], 'drawable-land-xxhdpi': [1600, 960],
+    'drawable-land-xxxhdpi': [1920, 1280],
+    'drawable-port-mdpi': [320, 480], 'drawable-port-hdpi': [480, 800],
+    'drawable-port-xhdpi': [720, 1280], 'drawable-port-xxhdpi': [960, 1600],
+    'drawable-port-xxxhdpi': [1280, 1920],
+  };
+  for (const [folder, [width, height]] of Object.entries(splashSizes)) {
+    const folderPath = path.join(androidResDir, folder);
+    await ensureDir(folderPath);
+    const markSize = Math.round(Math.min(width, height) * 0.3);
+    const mark = await sharp(logo).resize(markSize, markSize, { fit: 'contain' }).toBuffer();
+    const splash = await sharp({
+      create: { width, height, channels: 4, background: { r: 17, g: 59, b: 34, alpha: 1 } },
+    })
+      .composite([{ input: mark, gravity: 'centre' }])
+      .png()
+      .toBuffer();
+    await fs.writeFile(path.join(folderPath, 'splash.png'), splash);
+  }
+  console.log('   ✓ splash screens generated');
+
   const valuesDir = path.join(androidResDir, 'values');
   await ensureDir(valuesDir);
   await fs.writeFile(
