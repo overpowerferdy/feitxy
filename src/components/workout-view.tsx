@@ -13,6 +13,7 @@ const img = (name: string) => Object.entries(images).find(([k]) => k.endsWith(`/
 
 // [match text, picture, form cue, YouTube video id]
 const map: [string, string, string, string | null][] = [
+  ["Dumbbell Reverse Curls", "hammer-curl", "Palms facing down, elbows still, lower slowly.", null],
   ["Goblet Squat", "goblet-squat", "Chest up, sit between your heels, knees track over toes.", "7-80HiXX1K8"],
   ["Dumbbell Floor Press", "floor-press", "Elbows ~45°, pause lightly when upper arms touch the floor.", "T0Y3OBF1bNI"],
   ["One-Arm", "one-arm-row", "Flat back, pull the elbow toward your hip.", "dFzUjzfih7k"],
@@ -30,6 +31,12 @@ const map: [string, string, string, string | null][] = [
   ["Reverse Crunches", "reverse-crunch", "Curl hips off the floor, don't swing legs.", "JkTk8irSNKE"],
   ["Knee Tucks", "knee-tuck", "Lean back on your hands, pull knees to chest, extend slowly.", "x2umFUuBLRw"],
   ["Concentration Curls", "bicep-curl", "Elbow braced on inner thigh, curl slowly, squeeze at the top.", "os52QEIXQtM"],
+  ["Bent-over Rows", "one-arm-row", "Hinge forward, flat back, pull both dumbbells to your hips.", null],
+  ["Dumbbell Squats", "goblet-squat", "Dumbbells at your sides, sit back and down, chest up.", null],
+  ["Glute Bridges", "reverse-crunch", "Dumbbell on hips, drive through heels, squeeze glutes at the top.", null],
+  ["Side Bends", "plank", "Stand tall, bend sideways slowly, don't twist.", null],
+  ["Reverse Curls", "hammer-curl", "Palms facing down, elbows still, lower slowly.", null],
+  ["Wrist Curls", "bicep-curl", "Forearms on thighs, move only the wrists.", null],
   ["Walk", "recovery-stretch", "Easy pace — you should be able to talk.", null],
   ["Recovery day", "rest-day", "No training today. Sleep well, drink water and let your muscles rebuild.", null],
   ["Existing commitment", "commitment-day", "Busy day — that's fine. A short walk still counts if you have time.", null],
@@ -84,6 +91,7 @@ export function WorkoutView() {
   const done = entry?.completed ?? [];
   const isWorkout = plan.type.startsWith("Workout");
   const isMissed = isWorkout && date < today && !moves[date] && done.length === 0;
+  const canMove = isWorkout && !!today && !moves[date] && done.length === 0;
   const freeDays = week.filter((d) => canRescheduleWorkout(date, d, today) && !workoutForDate(d, moves).type.startsWith("Workout") && !Object.values(moves).includes(d));
 
   const setsLog = entry?.sets ?? {};
@@ -126,7 +134,7 @@ export function WorkoutView() {
           <div><p className="text-xs font-bold uppercase text-primary">{fmtDate(date, { weekday: "long", month: "short", day: "numeric" })}</p><h2 className="mt-1 text-2xl font-extrabold">{plan.title}</h2>{movedFrom && <p className="mt-1 text-sm text-muted-foreground">Moved here from {fmtDate(movedFrom, { weekday: "long" })}</p>}</div>
           {isWorkout && <span className="rounded-full bg-secondary px-3 py-1 text-sm font-bold text-secondary-foreground">{done.length} / {plan.exercises.length} done</span>}
         </div>
-        {isMissed && <div className="mt-4 rounded-xl bg-accent/50 p-4"><p className="font-semibold">Missed this one? Move it to a free day this week.</p>
+        {canMove && <div className="mt-4 rounded-xl bg-accent/50 p-4"><p className="font-semibold">{isMissed ? "Missed this one? Move it to a free day this week." : "Can't train this day? Move it to another free day this week."}</p>
           {freeDays.length ? <div className="mt-3 flex flex-wrap gap-2">{freeDays.map((d) => <Button key={d} size="sm" variant="outline" onClick={() => window.confirm(`Move ${plan.type} to ${fmtDate(d, { weekday: "long" })}?`) && move(date, d)}><ArrowRight />{fmtDate(d, { weekday: "long" })}</Button>)}</div> : <p className="mt-1 text-sm text-muted-foreground">No free days left this week — that's okay, start fresh next week.</p>}</div>}
         {(movedFrom || moves[date]) && <Button size="sm" variant="ghost" className="mt-3" onClick={undo}>Undo move</Button>}
 

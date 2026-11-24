@@ -59,13 +59,13 @@ export const CODING_TARGET_MINUTES = 240;
 export const DEFAULT_READING_PAGES = 15;
 
 export const workoutSchedule = [
-  { day: "Monday", title: "Rest & reset", type: "Rest", exercises: ["Recovery day", "Existing commitment · 10 AM–1 PM"] },
-  { day: "Tuesday", title: "Workout A · Full body", type: "Workout A", exercises: ["Goblet Squat · 3 × 10–12", "Dumbbell Floor Press · 3 × 8–12", "One-Arm Dumbbell Row · 3 × 10–12 each", "Romanian Deadlift · 3 × 10–12", "Bicep Curl · 2 × 10–15", "Push-ups · 2 × 10–15"] },
-  { day: "Wednesday", title: "Active recovery", type: "Recovery", exercises: ["Walk · 20–30 minutes", "Light stretching if needed"] },
-  { day: "Thursday", title: "Workout B · Upper + legs", type: "Workout B", exercises: ["Pull-ups · 3 × 3", "Dumbbell Shoulder Press · 3 × 8–12", "Reverse Lunges · 3 × 8–10 each leg", "Push-ups · 3 × 10–15", "Hammer Curls · 2 × 10–12"] },
-  { day: "Friday", title: "Rest & reset", type: "Rest", exercises: ["Recovery day", "Existing commitment · 5–10 PM"] },
-  { day: "Saturday", title: "Workout C · Full body", type: "Workout C", exercises: ["Dumbbell Split Squats · 3 × 8–10 each", "Chin-ups · 3 × 4–5", "Dumbbell Floor Press · 3 × 10–12", "Dumbbell Lateral Raises · 2 × 12–15", "Plank · 3 × 30–45 sec"] },
-  { day: "Sunday", title: "Rest & weekly review", type: "Review", exercises: ["Review workout progress", "Check strength improvements", "Prepare for the next week"] },
+  { day: "Monday", title: "Rest day", type: "Rest", exercises: ["Recovery day", "Existing commitment · 10 AM–1 PM"] },
+  { day: "Tuesday", title: "Workout A · Upper body", type: "Workout A", exercises: ["Pull-ups · 4 × 1–2", "Push-ups · 3 × 10–12", "One-Arm Dumbbell Rows · 3 × 10–12 each arm", "Dumbbell Shoulder Press · 3 × 10–12", "Dumbbell Lateral Raises · 3 × 12–15", "Concentration Curls · 2 × 10–12 each arm", "Dumbbell Reverse Curls · 2 × 12–15"] },
+  { day: "Wednesday", title: "Rest day", type: "Recovery", exercises: ["Recovery day", "Light stretching if needed"] },
+  { day: "Thursday", title: "Workout B · Lower body + abs", type: "Workout B", exercises: ["Goblet Squats · 3 × 12–15", "Dumbbell Romanian Deadlifts · 3 × 10–12", "Reverse Lunges · 3 × 10 each leg", "Dumbbell Glute Bridges · 3 × 12–15", "Reverse Crunches · 3 × 12–15", "Knee Tucks · 3 × 12–15", "Plank · 3 × 30–45 sec", "Dumbbell Side Bends · 2 × 12 each side"] },
+  { day: "Friday", title: "Rest day", type: "Rest", exercises: ["Recovery day", "Existing commitment · 5–10 PM"] },
+  { day: "Saturday", title: "Workout C · Full body", type: "Workout C", exercises: ["Chin-ups · 4 × 2–3", "Push-ups · 3 × 10–12", "Dumbbell Squats · 3 × 12", "Dumbbell Bent-over Rows · 3 × 10–12", "Dumbbell Shoulder Press · 2 × 10–12", "Dumbbell Hammer Curls · 3 × 10–12", "Dumbbell Wrist Curls · 2 × 12–15", "Reverse Crunches · 2 × 12–15", "Plank · 2 × 30–45 sec"] },
+  { day: "Sunday", title: "Rest + progress check", type: "Review", exercises: ["Review workout progress", "Check strength improvements", "Prepare for the next week"] },
 ];
 
 export const coreFinisher = ["Plank · 2–3 × 30–45 seconds", "Reverse Crunches · 2 × 12–15", "Knee Tucks · 2 × 10–12"];
@@ -100,7 +100,8 @@ export function mondayOf(dateString: string) {
 }
 
 export function canRescheduleWorkout(originalDate: string, targetDate: string, today: string) {
-  return originalDate < today && targetDate > today && mondayOf(originalDate) === mondayOf(targetDate) && mondayOf(targetDate) === mondayOf(today);
+  // Any workout day (missed or upcoming) can move to another day, today or later, in the same week.
+  return originalDate !== targetDate && targetDate >= today && mondayOf(originalDate) === mondayOf(targetDate) && mondayOf(targetDate) === mondayOf(today);
 }
 
 export type DayPlan = { day: string; title: string; type: string; exercises: string[] };
