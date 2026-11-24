@@ -96,6 +96,7 @@ export function mondayOf(dateString: string) {
   const date = new Date(`${dateString}T12:00:00`);
   const weekday = date.getDay();
   date.setDate(date.getDate() - ((weekday + 6) % 7));
+  if (Number.isNaN(date.getTime())) return "";
   return date.toISOString().slice(0, 10);
 }
 
