@@ -5,7 +5,7 @@ import { CoachPanel } from "@/components/coach-panel";
 import { DayPhoto } from "@/components/feit/photo-panel";
 import { SetTracker } from "@/components/feit/set-tracker";
 import { PageHeader } from "@/components/feit/ui";
-import { canRescheduleWorkout, coreFinisher, mondayOf, parseSets, workoutForDate } from "@/lib/fittrack-data";
+import { canRescheduleWorkout, coreFinisher, exercisesForDate, mondayOf, parseSets, workoutForDate } from "@/lib/fittrack-data";
 import { fmtDate, useFeit } from "@/lib/feit-store";
 
 const images = import.meta.glob("@/assets/exercises/*.jpg", { eager: true, import: "default" }) as Record<string, string>;
@@ -48,7 +48,8 @@ const map: [string, string, string, string | null][] = [
 ];
 const guide = (exercise: string) => map.find(([k]) => exercise.includes(k));
 
-function ExerciseCard({ ex, checked, onToggle, canCheck, logged, onLog }: { ex: string; checked: boolean; onToggle?: () => void; canCheck: boolean; logged?: number[] | undefined; onLog?: ((next: number[]) => void) | undefined }) {
+function ExerciseCard({ ex, checked, onToggle, canCheck, logged, onLog, moveDays, onMove, movedFrom, onMoveBack }: { ex: string; checked: boolean; onToggle?: () => void; canCheck: boolean; logged?: number[] | undefined; onLog?: ((next: number[]) => void) | undefined; moveDays?: string[]; onMove?: (to: string) => void; movedFrom?: string | undefined; onMoveBack?: () => void }) {
+  const [moving, setMoving] = useState(false);
   const g = guide(ex);
   const src = g && img(g[1]);
   const video = g?.[3];
@@ -72,7 +73,11 @@ function ExerciseCard({ ex, checked, onToggle, canCheck, logged, onLog }: { ex: 
           <div><h3 className="font-bold">{name}</h3>{sets && <p className="text-sm font-semibold text-primary">{sets}</p>}</div>
           {canCheck && <button aria-label={`Mark ${name} done`} onClick={onToggle} className={`flex size-10 shrink-0 items-center justify-center rounded-full border-2 transition-colors active:scale-90 ${checked ? "feit-pop border-primary bg-primary text-primary-foreground" : "border-input text-muted-foreground hover:border-primary"}`}><Check size={18} strokeWidth={3} /></button>}
         </div>
+        {movedFrom && <p className="mt-1 text-xs font-semibold text-muted-foreground">Moved here from {fmtDate(movedFrom, { weekday: "long" })} {onMoveBack && <button type="button" className="ml-1 underline" onClick={onMoveBack}>Move back</button>}</p>}
         {g && <p className="mt-2 text-sm text-muted-foreground">{g[2]}</p>}
+        {onMove && moveDays && moveDays.length > 0 && (!moving
+          ? <button type="button" className="mt-2 flex items-center gap-1 text-xs font-semibold text-primary" onClick={() => setMoving(true)}><ArrowRight size={12} />Move this exercise to another day</button>
+          : <div className="mt-2 rounded-lg bg-muted/60 p-2"><p className="text-xs font-semibold">Move {name} to:</p><div className="mt-1.5 flex flex-wrap gap-1.5">{moveDays.map((d) => <Button key={d} type="button" size="sm" variant="outline" className="h-8 px-2.5 text-xs" onClick={() => { onMove(d); setMoving(false); }}>{fmtDate(d, { weekday: "short" })}</Button>)}<Button type="button" size="sm" variant="ghost" className="h-8 px-2.5 text-xs" onClick={() => setMoving(false)}>Cancel</Button></div></div>)}
         {onLog && <SetTracker name={name ?? ex} sets={sets} logged={logged ?? []} onChange={onLog} />}
       </div>
     </article>
@@ -89,7 +94,9 @@ export function WorkoutView() {
   const plan = workoutForDate(date, moves);
   const entry = data.workouts.find((w) => w.date === date && w.name === plan.type);
   const done = entry?.completed ?? [];
-  const isWorkout = plan.type.startsWith("Workout");
+  const exMoves = data.exerciseMoves ?? {};
+  const dayExercises = exercisesForDate(date, plan, exMoves);
+  const isWorkout = plan.type.startsWith("Workout") || dayExercises.some((x) => x.from);
   const isMissed = isWorkout && date < today && !moves[date] && done.length === 0;
   const canMove = isWorkout && !!today && !moves[date] && done.length === 0;
   const freeDays = week.filter((d) => canRescheduleWorkout(date, d, today) && !workoutForDate(d, moves).type.startsWith("Workout") && !Object.values(moves).includes(d));
@@ -97,6 +104,11 @@ export function WorkoutView() {
   const setsLog = entry?.sets ?? {};
   function save(completed: string[], coreDone: boolean, sets: Record<string, number[]> = setsLog) {
     update((c) => ({ ...c, workouts: [...c.workouts.filter((w) => !(w.date === date && w.name === plan.type)), { date, name: plan.type, completed, coreDone, sets }] }));
+  }
+  /** Move one exercise to another day this week (or back where it came from). */
+  function moveExercise(ex: string, from: string, to: string) {
+    update((c) => { const m = { ...(c.exerciseMoves ?? {}) }; const key = `${from}|${ex}`; if (to === from) delete m[key]; else m[key] = to; return { ...c, exerciseMoves: m }; });
+    if (to !== from) notify(`${ex.split(" · ")[0]} moved to ${fmtDate(to, { weekday: "long" })}.`);
   }
   const canTrack = isWorkout && !!today && date <= today;
   /** Log sets; finishing every set ticks the exercise off automatically. */
@@ -132,15 +144,16 @@ export function WorkoutView() {
       <section className="feit-card rounded-2xl border border-border bg-card p-5 sm:p-6">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div><p className="text-xs font-bold uppercase text-primary">{fmtDate(date, { weekday: "long", month: "short", day: "numeric" })}</p><h2 className="mt-1 text-2xl font-extrabold">{plan.title}</h2>{movedFrom && <p className="mt-1 text-sm text-muted-foreground">Moved here from {fmtDate(movedFrom, { weekday: "long" })}</p>}</div>
-          {isWorkout && <span className="rounded-full bg-secondary px-3 py-1 text-sm font-bold text-secondary-foreground">{done.length} / {plan.exercises.length} done</span>}
+          {isWorkout && <span className="rounded-full bg-secondary px-3 py-1 text-sm font-bold text-secondary-foreground">{dayExercises.filter((x) => done.includes(x.ex)).length} / {dayExercises.length} done</span>}
         </div>
         {canMove && <div className="mt-4 rounded-xl bg-accent/50 p-4"><p className="font-semibold">{isMissed ? "Missed this one? Move it to a free day this week." : "Can't train this day? Move it to another free day this week."}</p>
           {freeDays.length ? <div className="mt-3 flex flex-wrap gap-2">{freeDays.map((d) => <Button key={d} size="sm" variant="outline" onClick={() => window.confirm(`Move ${plan.type} to ${fmtDate(d, { weekday: "long" })}?`) && move(date, d)}><ArrowRight />{fmtDate(d, { weekday: "long" })}</Button>)}</div> : <p className="mt-1 text-sm text-muted-foreground">No free days left this week — that's okay, start fresh next week.</p>}</div>}
         {(movedFrom || moves[date]) && <Button size="sm" variant="ghost" className="mt-3" onClick={undo}>Undo move</Button>}
 
         <div key={date} className="feit-stagger mt-5 grid gap-4 sm:grid-cols-2">
-          {plan.exercises.map((ex) => { const checked = done.includes(ex);
-            return <ExerciseCard key={ex} ex={ex} checked={checked} canCheck={isWorkout} onToggle={() => save(checked ? done.filter((x) => x !== ex) : [...done, ex], entry?.coreDone ?? false)} logged={setsLog[ex]} onLog={canTrack ? (next) => logSets(ex, next, parseSets(ex.split(" · ")[1])?.count) : undefined} />; })}
+          {(isWorkout ? dayExercises : plan.exercises.map((ex) => ({ ex, from: undefined as string | undefined }))).map(({ ex, from }) => { const checked = done.includes(ex);
+            const origin = from ?? date;
+            return <ExerciseCard key={ex} ex={ex} movedFrom={from} onMoveBack={from ? () => moveExercise(ex, from, from) : undefined} moveDays={isWorkout && !checked && !(setsLog[ex]?.length) ? week.filter((d) => d !== date && (!today || d >= today)) : []} onMove={(to) => moveExercise(ex, origin, to)} checked={checked} canCheck={isWorkout} onToggle={() => save(checked ? done.filter((x) => x !== ex) : [...done, ex], entry?.coreDone ?? false)} logged={setsLog[ex]} onLog={canTrack ? (next) => logSets(ex, next, parseSets(ex.split(" · ")[1])?.count) : undefined} />; })}
         </div>
 
         {isWorkout && <details className="mt-5 rounded-2xl bg-muted/60 p-4"><summary className="cursor-pointer font-bold">Core finisher {entry?.coreDone ? "✓" : "(optional)"}</summary>

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Minus, Pause, Play, Plus, RotateCcw, SkipForward, Timer, Undo2 } from "lucide-react";
+import { Check, Minus, Pause, Pencil, Play, Plus, Trash2, RotateCcw, SkipForward, Timer, Undo2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { parseSets } from "@/lib/fittrack-data";
 
@@ -41,6 +41,8 @@ export function SetTracker({ name, sets, logged, onChange }: { name: string; set
   const [startedAt, setStartedAt] = useState<number | null>(null);
   const [heldMs, setHeldMs] = useState(0);
   const [restEnd, setRestEnd] = useState<number | null>(null);
+  const [editing, setEditing] = useState<number | null>(null);
+  const [draft, setDraft] = useState("");
   const beeped = useRef({ low: false, high: false, rest: false });
   const running = startedAt !== null;
   useTick(running || restEnd !== null);
@@ -72,12 +74,25 @@ export function SetTracker({ name, sets, logged, onChange }: { name: string; set
         <span className="text-xs font-semibold tabular-nums">{Math.min(logged.length, plan.count)} / {plan.count}</span>
       </div>
       <div className="mt-2 flex flex-wrap gap-1.5">
-        {Array.from({ length: plan.count }, (_, i) => {
+        {Array.from({ length: Math.max(plan.count, logged.length) }, (_, i) => {
           const value = logged[i];
           const current = i === logged.length;
+          if (value !== undefined) return <button type="button" key={i} onClick={() => { setEditing(i); setDraft(String(value)); }} aria-label={`Edit set ${i + 1}: ${value} ${unit}`} className={`flex h-9 min-w-9 items-center justify-center rounded-lg px-2 text-sm font-bold tabular-nums ${editing === i ? "ring-2 ring-ring " : ""}bg-primary text-primary-foreground`}>{value}</button>;
           return <span key={i} className={`flex h-9 min-w-9 items-center justify-center rounded-lg px-2 text-sm font-bold tabular-nums transition-colors ${value !== undefined ? "feit-pop bg-primary text-primary-foreground" : current ? "border-2 border-primary bg-card text-foreground" : "border border-border bg-card text-muted-foreground"}`} title={value !== undefined ? `Set ${i + 1}: ${value} ${unit}` : `Set ${i + 1}`}>{value ?? i + 1}</span>;
         })}
       </div>
+
+      {editing !== null && logged[editing] !== undefined && (
+        <form className="mt-2 flex flex-wrap items-center gap-2 rounded-lg bg-card p-2" onSubmit={(e) => { e.preventDefault(); const v = Math.round(Number(draft)); if (!Number.isFinite(v) || v < 0) return; onChange(logged.map((x, i) => (i === editing ? v : x))); setEditing(null); }}>
+          <Pencil size={14} className="text-muted-foreground" />
+          <label className="text-xs font-semibold" htmlFor={`${name}-edit`}>Set {editing + 1}</label>
+          <input id={`${name}-edit`} type="number" inputMode="numeric" min={0} value={draft} onChange={(e) => setDraft(e.target.value)} className="h-8 w-20 rounded-md border border-input bg-background px-2 text-sm font-bold" />
+          <span className="text-xs text-muted-foreground">{unit}</span>
+          <Button type="submit" size="sm" className="h-8 px-2.5 text-xs"><Check size={14} />Save</Button>
+          <Button type="button" size="sm" variant="ghost" className="h-8 px-2.5 text-xs" onClick={() => { onChange(logged.filter((_, i) => i !== editing)); setEditing(null); }}><Trash2 size={14} />Delete</Button>
+          <Button type="button" size="sm" variant="ghost" className="h-8 px-2.5 text-xs" onClick={() => setEditing(null)}>Cancel</Button>
+        </form>
+      )}
 
       {restEnd !== null && restLeft > 0 && (
         <div className="mt-3 flex items-center justify-between gap-2 rounded-lg bg-accent/60 px-3 py-2 text-accent-foreground">
@@ -106,7 +121,8 @@ export function SetTracker({ name, sets, logged, onChange }: { name: string; set
           )}
           <Button type="button" size="sm" className="ml-auto" onClick={logSet}>Log set {logged.length + 1}</Button>
         </div>
-      ) : <p className="mt-3 text-sm font-semibold text-primary">All {plan.count} sets done — nice work!</p>}
+      ) : <div className="mt-3 flex flex-wrap items-center justify-between gap-2"><p className="text-sm font-semibold text-primary">All {plan.count} sets done — nice work!</p><Button type="button" size="sm" variant="outline" className="h-8 px-2.5 text-xs" onClick={() => onChange([...logged, plan.timed ? plan.low : reps])}><Plus size={14} />Extra set</Button></div>}
+      {logged.length > 0 && editing === null && <p className="mt-2 text-xs text-muted-foreground">Tap a logged set to change or delete it.</p>}
 
       {logged.length > 0 && <button type="button" className="mt-2 flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-foreground" onClick={() => { onChange(logged.slice(0, -1)); setRestEnd(null); }}><Undo2 size={12} />Undo last set</button>}
     </div>

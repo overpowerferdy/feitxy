@@ -39,6 +39,8 @@ export interface FitTrackData {
   readingNotes: string;
   roadmap: Record<string, string[]>;
   rescheduledWorkouts?: Record<string, string>;
+  /** Single exercise moves: `${fromDate}|${exercise}` -> new date. */
+  exerciseMoves?: Record<string, string>;
   steps?: StepEntry[];
   runs?: RunEntry[];
   runGoalKm?: number;
@@ -125,6 +127,15 @@ export function workoutForDate(date: string, reschedules: Record<string, string>
   }
 
   return regularDay;
+}
+
+/** A day's exercises after single-exercise moves: its own (minus moved-out) plus any moved in. */
+export function exercisesForDate(date: string, plan: DayPlan, exerciseMoves: Record<string, string> = {}) {
+  const own = plan.exercises.filter((ex) => !exerciseMoves[`${date}|${ex}`]).map((ex) => ({ ex, from: undefined as string | undefined }));
+  const movedIn = Object.entries(exerciseMoves).filter(([k, to]) => to === date && !k.startsWith(`${date}|`)).map(([k]) => { const i = k.indexOf("|"); return { ex: k.slice(i + 1), from: k.slice(0, i) as string | undefined }; });
+  // On a rest day, moved-in exercises replace the rest notes.
+  const base = movedIn.length && !plan.type.startsWith("Workout") ? [] : own;
+  return [...base, ...movedIn.filter((m) => !base.some((o) => o.ex === m.ex))];
 }
 
 export function weeklySpending(entries: PurchaseEntry[], date: string) {
