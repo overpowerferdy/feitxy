@@ -48,7 +48,7 @@ const map: [string, string, string, string | null][] = [
 ];
 const guide = (exercise: string) => map.find(([k]) => exercise.includes(k));
 
-function ExerciseCard({ ex, checked, onToggle, canCheck, logged, onLog, moveDays, onMove, movedFrom, onMoveBack }: { ex: string; checked: boolean; onToggle?: () => void; canCheck: boolean; logged?: number[] | undefined; onLog?: ((next: number[]) => void) | undefined; moveDays?: string[]; onMove?: (to: string) => void; movedFrom?: string | undefined; onMoveBack?: () => void }) {
+function ExerciseCard({ ex, checked, onToggle, canCheck, logged, onLog, moveDays, onMove, movedFrom, onMoveBack }: { ex: string; checked: boolean; onToggle?: () => void; canCheck: boolean; logged?: number[] | undefined; onLog?: ((next: number[]) => void) | undefined; moveDays?: string[]; onMove?: (to: string) => void; movedFrom?: string | undefined; onMoveBack?: (() => void) | undefined }) {
   const [moving, setMoving] = useState(false);
   const g = guide(ex);
   const src = g && img(g[1]);

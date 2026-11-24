@@ -25,6 +25,7 @@ export function withDefaults(data: FitTrackData): Required<FitTrackData> {
   return {
     ...data,
     rescheduledWorkouts: data.rescheduledWorkouts ?? {},
+    exerciseMoves: data.exerciseMoves ?? {},
     steps: data.steps ?? [],
     runs: data.runs ?? [],
     runGoalKm: data.runGoalKm ?? 10,
