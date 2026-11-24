@@ -101,6 +101,7 @@ export function mondayOf(dateString: string) {
 
 export function canRescheduleWorkout(originalDate: string, targetDate: string, today: string) {
   // Any workout day (missed or upcoming) can move to another day, today or later, in the same week.
+  if (!originalDate || !targetDate || !today) return false;
   return originalDate !== targetDate && targetDate >= today && mondayOf(originalDate) === mondayOf(targetDate) && mondayOf(targetDate) === mondayOf(today);
 }
 
