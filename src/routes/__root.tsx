@@ -15,6 +15,7 @@ import { setupNativeAuthCallback } from "@/lib/lovable-auth";
 import { Capacitor } from "@capacitor/core";
 import { SplashScreen } from "@capacitor/splash-screen";
 import { ReminderSync } from "@/components/feit/reminder-sync";
+import { FocusOverlay } from "@/components/feit/focus-overlay";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -159,6 +160,7 @@ function RootComponent() {
       <FeitProvider>
         <ReminderSync />
         <Outlet />
+        <FocusOverlay />
       </FeitProvider>
     </QueryClientProvider>
   );

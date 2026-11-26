@@ -284,6 +284,33 @@ export function parseSets(text: string | undefined): SetPlan | null {
   return { count, low, high: Math.max(low, high), timed: !!m[4] };
 }
 
+/** True when every set/exercise scheduled on this date (including moved-in work) is logged. */
+export function workoutDayComplete(data: FitTrackData, date: string) {
+  const moves = data.rescheduledWorkouts ?? {};
+  const overrides = data.workoutOverrides ?? {};
+  const exerciseMoves = data.exerciseMoves ?? {};
+  const plans = [workoutForDate(date, moves, overrides)];
+  for (const [from, to] of Object.entries(moves)) if (to === date) plans.push(workoutForDate(from, {}, overrides));
+  const exercises = new Set<string>();
+  for (const plan of plans) for (const { ex } of exercisesForDate(date, plan, exerciseMoves)) exercises.add(ex);
+
+  const entries = (data.workouts ?? []).filter((w) => w.date === date);
+  for (const entry of entries) for (const ex of Object.keys(entry.sets ?? {})) exercises.add(ex);
+  if (!exercises.size) return false;
+
+  let counted = 0;
+  for (const ex of exercises) {
+    const expected = parseSets(ex.split(" · ")[1])?.count ?? 0;
+    const logged = entries.reduce((max, entry) => Math.max(max, entry.sets?.[ex]?.length ?? 0), 0);
+    const checked = entries.some((entry) => entry.completed.includes(ex));
+    // Informational notes (rest day, commitment day) are not workouts.
+    if (expected === 0 && logged === 0 && !checked) continue;
+    counted++;
+    if (expected > 0 ? logged < expected : !checked) return false;
+  }
+  return counted > 0;
+}
+
 /** True when a saved tracker has any real logs in it. */
 export function hasLogs(d: FitTrackData) {
   return d.workouts.length + d.strength.length + d.sleep.length + d.weight.length + d.meals.length + d.purchases.length + d.coding.length + d.reading.length + (d.steps?.length ?? 0) + Object.keys(d.journal ?? {}).length + Object.keys(d.habits).length + Object.keys(d.routineDone ?? {}).length > 0 || d.readingPage > 0;

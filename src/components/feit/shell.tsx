@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { MouseEvent, ReactNode } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { BookOpen, Check, Dumbbell, HeartPulse, Home, ListChecks, NotebookPen, Settings, X } from "lucide-react";
 import logo from "@/assets/fittrack-logo.png";
@@ -24,17 +24,21 @@ function isActive(path: string, match: readonly string[]) {
 
 export function Shell({ children }: { children: ReactNode }) {
   const path = useRouterState({ select: (s) => s.location.pathname });
-  const { notice, notify } = useFeit();
+  const { notice, notify, focus } = useFeit();
+  // Focus mode temporarily owns navigation; links stay visible but cannot be used.
+  const locked = !!focus;
+  const guard = (event: MouseEvent) => { if (locked) event.preventDefault(); };
+  const lockClass = locked ? "pointer-events-none opacity-50" : "";
   return (
     <div className="min-h-screen bg-background">
       <aside className="feit-sidebar" aria-label="Main navigation">
-        <Link to="/" className="flex items-center gap-3 px-2 pb-6">
+        <Link to="/" onClick={guard} aria-disabled={locked || undefined} tabIndex={locked ? -1 : undefined} className={`flex items-center gap-3 px-2 pb-6 ${lockClass}`}>
           <img src={logo} alt="Feit logo" width={40} height={40} className="size-10 rounded-xl" />
           <div><p className="text-lg font-extrabold leading-none">Feit</p><p className="mt-1 text-xs text-sidebar-foreground/65">Small steps, strong habits</p></div>
         </Link>
         <nav className="grid gap-1">
           {[...main, ...extra].map(({ to, label, icon: Icon, match }) => (
-            <Link key={to} to={to} aria-current={isActive(path, match) ? "page" : undefined} className={`feit-side-link ${isActive(path, match) ? "is-active" : ""}`}>
+            <Link key={to} to={to} onClick={guard} aria-disabled={locked || undefined} tabIndex={locked ? -1 : undefined} aria-current={isActive(path, match) ? "page" : undefined} className={`feit-side-link ${isActive(path, match) ? "is-active" : ""} ${lockClass}`}>
               <Icon size={19} strokeWidth={2} /><span>{label}</span>
             </Link>
           ))}
@@ -43,10 +47,10 @@ export function Shell({ children }: { children: ReactNode }) {
       </aside>
 
       <header className="feit-topbar">
-        <Link to="/" className="flex items-center gap-2"><img src={logo} alt="Feit logo" width={32} height={32} className="size-8 rounded-lg" /><span className="text-lg font-extrabold">Feit</span></Link>
+        <Link to="/" onClick={guard} aria-disabled={locked || undefined} tabIndex={locked ? -1 : undefined} className={`flex items-center gap-2 ${lockClass}`}><img src={logo} alt="Feit logo" width={32} height={32} className="size-8 rounded-lg" /><span className="text-lg font-extrabold">Feit</span></Link>
         <div className="flex items-center gap-1">
-          <Link to="/habits" aria-label="Daily routine" className="feit-icon-link"><ListChecks size={20} /></Link>
-          <Link to="/settings" aria-label="Settings" className="feit-icon-link"><Settings size={20} /></Link>
+          <Link to="/habits" onClick={guard} aria-disabled={locked || undefined} tabIndex={locked ? -1 : undefined} aria-label="Daily routine" className={`feit-icon-link ${lockClass}`}><ListChecks size={20} /></Link>
+          <Link to="/settings" onClick={guard} aria-disabled={locked || undefined} tabIndex={locked ? -1 : undefined} aria-label="Settings" className={`feit-icon-link ${lockClass}`}><Settings size={20} /></Link>
         </div>
       </header>
 
@@ -56,7 +60,7 @@ export function Shell({ children }: { children: ReactNode }) {
 
       <nav className="feit-bottom-nav" aria-label="Main navigation">
         {main.map(({ to, label, icon: Icon, match }) => (
-          <Link key={to} to={to} aria-current={isActive(path, match) ? "page" : undefined} className={`feit-bottom-link ${isActive(path, match) ? "is-active" : ""}`}>
+          <Link key={to} to={to} onClick={guard} aria-disabled={locked || undefined} tabIndex={locked ? -1 : undefined} aria-current={isActive(path, match) ? "page" : undefined} className={`feit-bottom-link ${isActive(path, match) ? "is-active" : ""} ${lockClass}`}>
             <Icon size={21} strokeWidth={2} /><span>{label}</span>
           </Link>
         ))}

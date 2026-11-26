@@ -9,6 +9,21 @@ const THEME_KEY = "fittrack-theme";
 const SAVED_AT_KEY = "fittrack-saved-at";
 /** Which account this device's logs were last synced with. */
 const SYNCED_USER_KEY = "fittrack-synced-user";
+/** Active focus session. Kept on device so a reload cannot silently unlock the app. */
+const FOCUS_KEY = "fittrack-focus";
+
+export type FocusSession = { date: string; durationSec: number; startedAt: number; endsAt: number };
+
+function readFocus(): FocusSession | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(FOCUS_KEY);
+    if (!raw) return null;
+    const value = JSON.parse(raw) as Partial<FocusSession>;
+    if (typeof value.date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value.date) && typeof value.durationSec === "number" && value.durationSec > 0 && typeof value.startedAt === "number" && typeof value.endsAt === "number" && Number.isFinite(value.endsAt)) return value as FocusSession;
+  } catch { /* ignore stale focus state */ }
+  return null;
+}
 
 export type SyncState = "off" | "syncing" | "synced" | "error";
 
@@ -58,6 +73,9 @@ type Store = {
   sync: SyncState;
   lastSynced: string;
   routineCtx: RoutineContext;
+  focus: FocusSession | null;
+  startFocus: (date: string, durationSec: number) => void;
+  endFocus: () => void;
 };
 
 const StoreContext = createContext<Store | null>(null);
@@ -73,6 +91,7 @@ export function FeitProvider({ children }: { children: ReactNode }) {
   const [authReady, setAuthReady] = useState(false);
   const [sync, setSync] = useState<SyncState>("off");
   const [lastSynced, setLastSynced] = useState("");
+  const [focus, setFocus] = useState<FocusSession | null>(() => readFocus());
   const savedAt = useRef("");
   const skipUpload = useRef(false);
   const cloudReady = useRef(false);
@@ -192,6 +211,12 @@ export function FeitProvider({ children }: { children: ReactNode }) {
     return () => window.clearTimeout(t);
   }, [notice]);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (focus) window.localStorage.setItem(FOCUS_KEY, JSON.stringify(focus));
+    else window.localStorage.removeItem(FOCUS_KEY);
+  }, [focus]);
+
   const data = useMemo(() => withDefaults(raw), [raw]);
   const update = useCallback((updater: (current: Required<FitTrackData>) => FitTrackData) => { markLocal(); setRaw((current) => updater(withDefaults(current))); }, [markLocal]);
   const replace = useCallback((next: FitTrackData) => { markLocal(); setRaw(next); }, [markLocal]);
@@ -200,8 +225,14 @@ export function FeitProvider({ children }: { children: ReactNode }) {
     if (next === "device") window.localStorage.removeItem(THEME_KEY); else window.localStorage.setItem(THEME_KEY, next);
     setThemeState(next);
   }, []);
+  const startFocus = useCallback((date: string, durationSec: number) => {
+    const seconds = Math.min(3 * 60 * 60, Math.max(60, Math.round(durationSec)));
+    const now = Date.now();
+    setFocus({ date, durationSec: seconds, startedAt: now, endsAt: now + seconds * 1000 });
+  }, []);
+  const endFocus = useCallback(() => setFocus(null), []);
 
-  const value: Store = { data, update, replace, today, hydrated, notice, notify: setNotice, theme, setTheme, isDark, session, authReady, sync, lastSynced, routineCtx };
+  const value: Store = { data, update, replace, today, hydrated, notice, notify: setNotice, theme, setTheme, isDark, session, authReady, sync, lastSynced, routineCtx, focus, startFocus, endFocus };
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;
 }
 

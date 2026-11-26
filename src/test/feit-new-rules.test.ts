@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { coreFinisher, defaultRoutine, dueRoutineItems, estimateKm, roundWeight, routineForDate, sleepBetween } from "@/lib/fittrack-data";
+import { coreFinisher, createEmptyData, defaultRoutine, dueRoutineItems, estimateKm, parseSets, roundWeight, routineForDate, sleepBetween, workoutDayComplete, workoutSchedule } from "@/lib/fittrack-data";
 
 describe("steps", () => {
   it("estimates km from steps for a 165 cm height", () => {
@@ -66,4 +66,17 @@ describe("running", () => {
     expect(_wk([r("2026-11-22", 9), r("2026-11-23", 3), r("2026-11-29", 2.5), r("2026-11-30", 4)], "2026-11-23")).toBe(5.5);
   });
   it("run steps use longer stride", () => { expect(_rs(1)).toBe(932); });
+});
+
+describe("focus session completion", () => {
+  it("unlocks early only when every scheduled set on that date is logged", () => {
+    const date = "2026-11-17"; // Tuesday · Workout A
+    const exercises = workoutSchedule[1]!.exercises;
+    const sets = Object.fromEntries(exercises.map((ex) => [ex, Array(parseSets(ex.split(" · ")[1])?.count ?? 0).fill(10)]));
+    const base = createEmptyData();
+    expect(workoutDayComplete(base, date)).toBe(false);
+    expect(workoutDayComplete({ ...base, workouts: [{ date, name: "Workout A", completed: [], sets, weights: {} }] }, date)).toBe(true);
+    const missingOne = { ...sets, [exercises[0]!]: [] };
+    expect(workoutDayComplete({ ...base, workouts: [{ date, name: "Workout A", completed: [], sets: missingOne, weights: {} }] }, date)).toBe(false);
+  });
 });
