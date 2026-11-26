@@ -8,7 +8,7 @@ import { CoachPanel } from "@/components/coach-panel";
 import { DayPhoto } from "@/components/feit/photo-panel";
 import { SetTracker } from "@/components/feit/set-tracker";
 import { PageHeader } from "@/components/feit/ui";
-import { addDays, canRescheduleWorkout, coreFinisher, mondayOf, parseSets, workoutForDate } from "@/lib/fittrack-data";
+import { addDays, canRescheduleWorkout, coreFinisher, exercisesForDate, mondayOf, parseSets, workoutForDate } from "@/lib/fittrack-data";
 import { fmtDate, useFeit } from "@/lib/feit-store";
 
 const images = import.meta.glob("@/assets/exercises/*.jpg", { eager: true, import: "default" }) as Record<string, string>;
@@ -16,6 +16,7 @@ const img = (name: string) => Object.entries(images).find(([k]) => k.endsWith(`/
 
 // [match text, picture, form cue, YouTube video id]
 const map: [string, string, string, string | null][] = [
+  ["Dumbbell Reverse Curls", "hammer-curl", "Palms facing down, elbows still, lower slowly.", null],
   ["Goblet Squat", "goblet-squat", "Chest up, sit between your heels, knees track over toes.", "7-80HiXX1K8"],
   ["Dumbbell Floor Press", "floor-press", "Elbows ~45°, pause lightly when upper arms touch the floor.", "T0Y3OBF1bNI"],
   ["One-Arm", "one-arm-row", "Flat back, pull the elbow toward your hip.", "dFzUjzfih7k"],
@@ -33,6 +34,12 @@ const map: [string, string, string, string | null][] = [
   ["Reverse Crunches", "reverse-crunch", "Curl hips off the floor, don't swing legs.", "JkTk8irSNKE"],
   ["Knee Tucks", "knee-tuck", "Lean back on your hands, pull knees to chest, extend slowly.", "x2umFUuBLRw"],
   ["Concentration Curls", "bicep-curl", "Elbow braced on inner thigh, curl slowly, squeeze at the top.", "os52QEIXQtM"],
+  ["Bent-over Rows", "one-arm-row", "Hinge forward, flat back, pull both dumbbells to your hips.", null],
+  ["Dumbbell Squats", "goblet-squat", "Dumbbells at your sides, sit back and down, chest up.", null],
+  ["Glute Bridges", "reverse-crunch", "Dumbbell on hips, drive through heels, squeeze glutes at the top.", null],
+  ["Side Bends", "plank", "Stand tall, bend sideways slowly, don't twist.", null],
+  ["Reverse Curls", "hammer-curl", "Palms facing down, elbows still, lower slowly.", null],
+  ["Wrist Curls", "bicep-curl", "Forearms on thighs, move only the wrists.", null],
   ["Walk", "recovery-stretch", "Easy pace — you should be able to talk.", null],
   ["Recovery day", "rest-day", "No training today. Sleep well, drink water and let your muscles rebuild.", null],
   ["Existing commitment", "commitment-day", "Busy day — that's fine. A short walk still counts if you have time.", null],
@@ -60,12 +67,14 @@ function videoIdFrom(input: string) {
   } catch { return null; }
 }
 
-function ExerciseCard({ ex, checked, onToggle, canCheck, logged, weights, onLog, videoId, onSaveVideo }: {
+function ExerciseCard({ ex, checked, onToggle, canCheck, logged, weights, onLog, moveDays, onMove, movedFrom, onMoveBack, videoId, onSaveVideo }: {
   ex: string; checked: boolean; onToggle?: () => void; canCheck: boolean;
   logged?: number[] | undefined; weights?: number[] | undefined;
   onLog?: ((next: number[], nextWeights: number[]) => void) | undefined;
+  moveDays?: string[]; onMove?: (to: string) => void; movedFrom?: string | undefined; onMoveBack?: (() => void) | undefined;
   videoId?: string | undefined; onSaveVideo: (id: string) => void;
 }) {
+  const [moving, setMoving] = useState(false);
   const g = guide(ex);
   const src = g && img(g[1]);
   const video = videoId || g?.[3] || undefined;
@@ -92,7 +101,11 @@ function ExerciseCard({ ex, checked, onToggle, canCheck, logged, weights, onLog,
           <div><h3 className="font-bold">{name}</h3>{sets && <p className="text-sm font-semibold text-primary">{sets}</p>}</div>
           {canCheck && <button aria-label={`Mark ${name} done`} onClick={onToggle} className={`flex size-10 shrink-0 items-center justify-center rounded-full border-2 transition-colors active:scale-90 ${checked ? "feit-pop border-primary bg-primary text-primary-foreground" : "border-input text-muted-foreground hover:border-primary"}`}><Check size={18} strokeWidth={3} /></button>}
         </div>
+        {movedFrom && <p className="mt-1 text-xs font-semibold text-muted-foreground">Moved here from {fmtDate(movedFrom, { weekday: "long" })} {onMoveBack && <button type="button" className="ml-1 underline" onClick={onMoveBack}>Move back</button>}</p>}
         {g && <p className="mt-2 text-sm text-muted-foreground">{g[2]}</p>}
+        {onMove && moveDays && moveDays.length > 0 && (!moving
+          ? <button type="button" className="mt-2 flex items-center gap-1 text-xs font-semibold text-primary" onClick={() => setMoving(true)}><ArrowRight size={12} />Move this exercise to another day</button>
+          : <div className="mt-2 rounded-lg bg-muted/60 p-2"><p className="text-xs font-semibold">Move {name} to:</p><div className="mt-1.5 flex flex-wrap gap-1.5">{moveDays.map((d) => <Button key={d} type="button" size="sm" variant="outline" className="h-8 px-2.5 text-xs" onClick={() => { onMove(d); setMoving(false); }}>{fmtDate(d, { weekday: "short" })}</Button>)}<Button type="button" size="sm" variant="ghost" className="h-8 px-2.5 text-xs" onClick={() => setMoving(false)}>Cancel</Button></div></div>)}
         {onLog && <SetTracker name={name ?? ex} sets={sets} logged={logged ?? []} weights={weights} onChange={onLog} />}
         <button type="button" onClick={() => { setDraft(video ?? ""); setVideoError(""); setVideoOpen(true); }} className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-muted-foreground transition-colors hover:text-primary"><Link2 size={13} />Edit video link</button>
       </div>
@@ -127,14 +140,22 @@ export function WorkoutView() {
   const plan = workoutForDate(date, moves, overrides);
   const entry = data.workouts.find((w) => w.date === date && w.name === plan.type);
   const done = entry?.completed ?? [];
-  const isWorkout = plan.type.startsWith("Workout");
+  const exMoves = data.exerciseMoves ?? {};
+  const dayExercises = exercisesForDate(date, plan, exMoves);
+  const isWorkout = plan.type.startsWith("Workout") || dayExercises.some((x) => x.from);
   const isMissed = weekOffset === 0 && isWorkout && date < today && !moves[date] && done.length === 0;
+  const canMove = isWorkout && !!today && !moves[date] && done.length === 0;
   const freeDays = week.filter((d) => canRescheduleWorkout(date, d, today) && !workoutForDate(d, moves, overrides).type.startsWith("Workout") && !Object.values(moves).includes(d));
 
   const setsLog = entry?.sets ?? {};
   const weightsLog = entry?.weights ?? {};
   function save(completed: string[], coreDone: boolean, sets: Record<string, number[]> = setsLog, weights: Record<string, number[]> = weightsLog) {
     update((c) => ({ ...c, workouts: [...c.workouts.filter((w) => !(w.date === date && w.name === plan.type)), { date, name: plan.type, completed, coreDone, sets, weights }] }));
+  }
+  /** Move one exercise to another day this week (or back where it came from). */
+  function moveExercise(ex: string, from: string, to: string) {
+    update((c) => { const m = { ...(c.exerciseMoves ?? {}) }; const key = `${from}|${ex}`; if (to === from) delete m[key]; else m[key] = to; return { ...c, exerciseMoves: m }; });
+    if (to !== from) notify(`${ex.split(" · ")[0]} moved to ${fmtDate(to, { weekday: "long" })}.`);
   }
   const canTrack = isWorkout && !!today && date <= today;
   /** Log sets and their kg values; finishing every set ticks the exercise off automatically. */
@@ -164,7 +185,7 @@ export function WorkoutView() {
     const type = String(f.get("type") ?? "Workout").trim();
     const exercises = String(f.get("exercises") ?? "").split("\n").map((line) => line.trim()).filter(Boolean);
     if (!title || !type || !exercises.length) { notify("Add a title and at least one exercise."); return; }
-    update((c) => ({ ...c, workoutOverrides: { ...c.workoutOverrides, [date]: { day: fmtDate(date, { weekday: "long" }), title, type, exercises } }, workouts: c.workouts.filter((w) => !(w.date === date)) }));
+    update((c) => ({ ...c, workoutOverrides: { ...c.workoutOverrides, [date]: { day: fmtDate(date, { weekday: "long" }), title, type, exercises } }, workouts: c.workouts.filter((w) => w.date !== date) }));
     notify("Workout updated for this day.");
   }
   function deleteWorkout() {
@@ -186,9 +207,10 @@ export function WorkoutView() {
     notify(id ? "Video link updated." : "Default video restored.");
   }
 
-  const totalSets = plan.exercises.reduce((sum, ex) => sum + (parseSets(ex.split(" · ")[1])?.count ?? 0), 0);
-  const loggedSets = plan.exercises.reduce((sum, ex) => sum + Math.min(setsLog[ex]?.length ?? 0, parseSets(ex.split(" · ")[1])?.count ?? 0), 0);
-  const focusComplete = totalSets > 0 ? loggedSets >= totalSets : done.length >= plan.exercises.length;
+  const visible = isWorkout ? dayExercises : plan.exercises.map((ex) => ({ ex, from: undefined as string | undefined }));
+  const totalSets = visible.reduce((sum, { ex }) => sum + (parseSets(ex.split(" · ")[1])?.count ?? 0), 0);
+  const loggedSets = visible.reduce((sum, { ex }) => sum + Math.min(setsLog[ex]?.length ?? 0, parseSets(ex.split(" · ")[1])?.count ?? 0), 0);
+  const focusComplete = totalSets > 0 ? loggedSets >= totalSets : done.length >= visible.length;
 
   // While focus mode is open, keep the user inside the session until it is finished.
   useEffect(() => {
@@ -204,9 +226,10 @@ export function WorkoutView() {
   function exerciseGrid() {
     return (
       <div className="feit-stagger mt-5 grid gap-4 sm:grid-cols-2">
-        {plan.exercises.map((ex) => {
+        {visible.map(({ ex, from }) => {
           const checked = done.includes(ex);
-          return <ExerciseCard key={ex} ex={ex} checked={checked} canCheck={isWorkout} onToggle={() => save(checked ? done.filter((x) => x !== ex) : [...done, ex], entry?.coreDone ?? false)} logged={setsLog[ex]} weights={weightsLog[ex]} videoId={data.videoLinks[exerciseKey(ex)]} onSaveVideo={(id) => saveVideo(ex, id)} onLog={canTrack ? (next, nextWeights) => logSets(ex, next, nextWeights, parseSets(ex.split(" · ")[1])?.count) : undefined} />;
+          const origin = from ?? date;
+          return <ExerciseCard key={ex} ex={ex} checked={checked} canCheck={isWorkout} onToggle={() => save(checked ? done.filter((x) => x !== ex) : [...done, ex], entry?.coreDone ?? false)} movedFrom={from} onMoveBack={from ? () => moveExercise(ex, from, from) : undefined} moveDays={isWorkout && !checked && !(setsLog[ex]?.length) ? week.filter((d) => d !== date && (!today || d >= today)) : []} onMove={(to) => moveExercise(ex, origin, to)} logged={setsLog[ex]} weights={weightsLog[ex]} videoId={data.videoLinks[exerciseKey(ex)]} onSaveVideo={(id) => saveVideo(ex, id)} onLog={canTrack ? (next, nextWeights) => logSets(ex, next, nextWeights, parseSets(ex.split(" · ")[1])?.count) : undefined} />;
         })}
       </div>
     );
@@ -234,9 +257,9 @@ export function WorkoutView() {
       <section className="feit-card rounded-2xl border border-border bg-card p-5 sm:p-6">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div><p className="text-xs font-bold uppercase text-primary">{fmtDate(date, { weekday: "long", month: "short", day: "numeric" })}</p><h2 className="mt-1 text-2xl font-extrabold">{plan.title}</h2>{movedFrom && <p className="mt-1 text-sm text-muted-foreground">Moved here from {fmtDate(movedFrom, { weekday: "long" })}</p>}</div>
-          {isWorkout && <span className="rounded-full bg-secondary px-3 py-1 text-sm font-bold text-secondary-foreground">{done.length} / {plan.exercises.length} done</span>}
+          {isWorkout && <span className="rounded-full bg-secondary px-3 py-1 text-sm font-bold text-secondary-foreground">{visible.filter((x) => done.includes(x.ex)).length} / {visible.length} done</span>}
         </div>
-        {isMissed && <div className="mt-4 rounded-xl bg-accent/50 p-4"><p className="font-semibold">Missed this one? Move it to a free day this week.</p>
+        {canMove && <div className="mt-4 rounded-xl bg-accent/50 p-4"><p className="font-semibold">{isMissed ? "Missed this one? Move it to a free day this week." : "Can't train this day? Move it to another free day this week."}</p>
           {freeDays.length ? <div className="mt-3 flex flex-wrap gap-2">{freeDays.map((d) => <Button key={d} size="sm" variant="outline" onClick={() => window.confirm(`Move ${plan.type} to ${fmtDate(d, { weekday: "long" })}?`) && move(date, d)}><ArrowRight />{fmtDate(d, { weekday: "long" })}</Button>)}</div> : <p className="mt-1 text-sm text-muted-foreground">No free days left this week — that's okay, start fresh next week.</p>}</div>}
         {(movedFrom || moves[date]) && <Button size="sm" variant="ghost" className="mt-3" onClick={undo}>Undo move</Button>}
 
@@ -271,8 +294,8 @@ export function WorkoutView() {
             <header className="sticky top-0 z-10 rounded-2xl border border-border bg-card/95 p-4 backdrop-blur">
               <p className="text-xs font-bold uppercase tracking-wide text-primary">Focus mode</p>
               <h2 className="mt-1 text-2xl font-extrabold">{plan.title}</h2>
-              <p className="mt-1 text-sm text-muted-foreground" aria-live="polite">{Math.min(loggedSets, totalSets)} / {totalSets || plan.exercises.length} sets · {done.length} / {plan.exercises.length} exercises done</p>
-              <div className="mt-3 h-2 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-primary transition-all" style={{ width: `${focusComplete ? 100 : Math.round((totalSets ? loggedSets / totalSets : done.length / plan.exercises.length) * 100)}%` }} /></div>
+              <p className="mt-1 text-sm text-muted-foreground" aria-live="polite">{Math.min(loggedSets, totalSets)} / {totalSets || visible.length} sets · {done.length} / {visible.length} exercises done</p>
+              <div className="mt-3 h-2 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-primary transition-all" style={{ width: `${focusComplete ? 100 : Math.round((totalSets ? loggedSets / totalSets : done.length / visible.length) * 100)}%` }} /></div>
             </header>
             {exerciseGrid()}
             <div className="fixed inset-x-0 bottom-0 border-t border-border bg-card/95 p-4 backdrop-blur">

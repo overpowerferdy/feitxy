@@ -77,8 +77,6 @@ export const PushNotificationService = {
           body,
           id: Date.now(),
           schedule: { at: new Date(Date.now() + 1000) }, // 1 second from now
-          sound: undefined,
-          attachments: undefined,
           actionTypeId: '',
           extra: null,
         },

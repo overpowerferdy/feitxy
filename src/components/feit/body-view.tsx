@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardTitle, Empty, Field, LogRow, PageHeader, ProgressBar, Segmented, selectClass } from "@/components/feit/ui";
 import { addDays, canAddPurchase, estimateKm, minutesLabel, mondayOf, roundWeight, sleepBetween, SLEEP_TARGET_MINUTES, WEEKLY_FOOD_LIMIT, weeklySpending } from "@/lib/fittrack-data";
 import { fmtDate, fmtTime, newId, useFeit } from "@/lib/feit-store";
+import { RunSection } from "@/components/feit/run-tracker";
 import { FoodPhotoCard } from "@/components/feit/food-photo";
 
 type Tab = "steps" | "sleep" | "weight" | "food";
@@ -19,7 +20,7 @@ export function BodyView() {
       <PageHeader eyebrow="Take care of yourself" title="Body" subtitle="Movement, sleep, weight and food — log what really happened." />
       <Segmented label="Body sections" value={tab} onChange={setTab} options={[{ value: "steps", label: "Movement", icon: Footprints }, { value: "sleep", label: "Sleep", icon: BedDouble }, { value: "weight", label: "Weight", icon: Scale }, { value: "food", label: "Food", icon: Utensils }]} />
       <div key={tab} className="feit-stagger space-y-5">
-        {tab === "steps" && <StepsSection />}
+        {tab === "steps" && <><StepsSection /><RunSection /></>}
         {tab === "sleep" && <SleepSection />}
         {tab === "weight" && <WeightSection />}
         {tab === "food" && <FoodSection />}
@@ -30,30 +31,22 @@ export function BodyView() {
 
 function StepsSection() {
   const { data, update, today, notify } = useFeit();
-  const [kind, setKind] = useState<"steps" | "run">("steps");
   const [steps, setSteps] = useState("");
   const [km, setKm] = useState("");
-  const [minutes, setMinutes] = useState("");
   const [kmTouched, setKmTouched] = useState(false);
-  const todayEntries = data.steps.filter((s) => s.date === today);
-  const todaySteps = todayEntries.filter((s) => s.kind !== "run").reduce((sum, s) => sum + s.steps, 0);
-  const todayKm = todayEntries.reduce((sum, s) => sum + s.km, 0);
-  const runMinutes = todayEntries.filter((s) => s.kind === "run").reduce((sum, s) => sum + (s.minutes ?? 0), 0);
-  const week = Array.from({ length: 7 }, (_, i) => addDays(mondayOf(today || "2026-11-16"), i)).map((d) => {
-    const entries = data.steps.filter((s) => s.date === d);
-    return { day: fmtDate(d, { weekday: "short" }), steps: entries.filter((s) => s.kind !== "run").reduce((sum, s) => sum + s.steps, 0), "Run km": Math.round(entries.filter((s) => s.kind === "run").reduce((sum, s) => sum + s.km, 0) * 10) / 10 };
-  });
-  function reset() { setSteps(""); setKm(""); setMinutes(""); setKmTouched(false); }
+  const todaySteps = data.steps.filter((s) => s.date === today).reduce((sum, s) => sum + s.steps, 0);
+  const todayKm = data.steps.filter((s) => s.date === today).reduce((sum, s) => sum + s.km, 0);
+  const runMinutes = Math.round(data.runs.filter((r) => r.date === today).reduce((sum, r) => sum + r.seconds, 0) / 60);
+  const week = Array.from({ length: 7 }, (_, i) => addDays(mondayOf(today || "2026-11-16"), i)).map((d) => ({ day: fmtDate(d, { weekday: "short" }), steps: data.steps.filter((s) => s.date === d).reduce((sum, s) => sum + s.steps, 0), "Run km": Math.round(data.runs.filter((r) => r.date === d).reduce((sum, r) => sum + r.km, 0) * 10) / 10 }));
   function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const f = new FormData(e.currentTarget);
-    const n = kind === "steps" ? Math.round(Number(steps)) : 0;
-    const k = Number(km || (kind === "steps" ? estimateKm(n) : 0));
-    const mins = kind === "run" ? Math.round(Number(minutes)) : 0;
-    if (!Number.isFinite(k) || k < 0 || (kind === "steps" && (!Number.isFinite(n) || n <= 0)) || (kind === "run" && (!Number.isFinite(mins) || mins <= 0 || k <= 0))) return;
-    update((c) => ({ ...c, steps: [...c.steps, { id: newId(), date: String(f.get("date") || today), steps: n, km: Math.round(k * 100) / 100, kind, ...(kind === "run" ? { minutes: mins } : {}) }].sort((a, b) => a.date.localeCompare(b.date)) }));
-    reset();
-    notify(kind === "run" ? "Run saved." : "Steps saved.");
+    const n = Math.round(Number(steps));
+    const k = Number(km || estimateKm(n));
+    if (!Number.isFinite(n) || n <= 0 || !Number.isFinite(k) || k < 0) return;
+    update((c) => ({ ...c, steps: [...c.steps, { id: newId(), date: String(f.get("date") || today), steps: n, km: Math.round(k * 100) / 100 }].sort((a, b) => a.date.localeCompare(b.date)) }));
+    setSteps(""); setKm(""); setKmTouched(false);
+    notify("Steps saved.");
   }
   return (
     <>
@@ -64,28 +57,18 @@ function StepsSection() {
         <ProgressBar value={todaySteps} max={data.stepGoal} />
       </Card>
       <Card className="p-5 sm:p-6">
-        <CardTitle icon={Plus} title="Add movement" hint="Steps and runs in one place — your phone's health app works too." />
-        <Segmented label="Activity type" value={kind} onChange={(next) => { setKind(next); reset(); }} options={[{ value: "steps", label: "Steps", icon: Footprints }, { value: "run", label: "Run", icon: Activity }]} />
-        <form onSubmit={submit} className="mt-3 grid gap-3 sm:grid-cols-3">
+        <CardTitle icon={Plus} title="Add steps" hint="Copy the number from your phone's health app. Km is filled in for you." />
+        <form onSubmit={submit} className="grid gap-3 sm:grid-cols-3">
           <Field label="Day"><Input name="date" type="date" defaultValue={today} required /></Field>
-          {kind === "steps" ? (
-            <>
-              <Field label="Steps"><Input inputMode="numeric" type="number" min="1" step="1" placeholder="e.g. 6500" value={steps} required onChange={(e) => { setSteps(e.target.value); if (!kmTouched) setKm(e.target.value ? String(estimateKm(Number(e.target.value))) : ""); }} /></Field>
-              <Field label="Distance · km" hint="Estimated from your height"><Input inputMode="decimal" type="number" min="0" step="0.01" placeholder="0.00" value={km} onChange={(e) => { setKm(e.target.value); setKmTouched(true); }} /></Field>
-            </>
-          ) : (
-            <>
-              <Field label="Minutes"><Input inputMode="numeric" type="number" min="1" step="1" placeholder="e.g. 20" value={minutes} required onChange={(e) => setMinutes(e.target.value)} /></Field>
-              <Field label="Distance · km"><Input inputMode="decimal" type="number" min="0.01" step="0.01" placeholder="e.g. 3.2" value={km} required onChange={(e) => setKm(e.target.value)} /></Field>
-            </>
-          )}
-          <Button type="submit" className="sm:col-span-3"><Plus size={16} />Save {kind === "run" ? "run" : "steps"}</Button>
+          <Field label="Steps"><Input inputMode="numeric" type="number" min="1" step="1" placeholder="e.g. 6500" value={steps} required onChange={(e) => { setSteps(e.target.value); if (!kmTouched) setKm(e.target.value ? String(estimateKm(Number(e.target.value))) : ""); }} /></Field>
+          <Field label="Distance · km" hint="Estimated from your height"><Input inputMode="decimal" type="number" min="0" step="0.01" placeholder="0.00" value={km} onChange={(e) => { setKm(e.target.value); setKmTouched(true); }} /></Field>
+          <Button type="submit" className="sm:col-span-3"><Plus size={16} />Save steps</Button>
         </form>
       </Card>
       <Card className="p-5 sm:p-6">
         <CardTitle title="This week" />
         <div className="h-52"><ResponsiveContainer width="100%" height="100%"><BarChart data={week} margin={{ top: 4, right: 4, left: -18, bottom: 0 }}><CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} /><XAxis dataKey="day" tick={tick} /><YAxis tick={tick} /><Tooltip contentStyle={tooltipStyle} /><Bar dataKey="steps" name="Steps" fill="var(--color-chart-1)" radius={[6, 6, 0, 0]} /><Bar dataKey="Run km" name="Run km" fill="var(--color-chart-2)" radius={[6, 6, 0, 0]} /></BarChart></ResponsiveContainer></div>
-        <div className="mt-3 divide-y divide-border">{data.steps.slice(-8).reverse().map((s) => <LogRow key={s.id} what={s.kind === "run" ? "run entry" : "steps entry"} title={s.kind === "run" ? `Run · ${s.minutes ?? 0} min` : `${s.steps.toLocaleString()} steps`} detail={fmtDate(s.date)} right={`${s.km.toFixed(2)} km`} onDelete={() => update((c) => ({ ...c, steps: c.steps.filter((x) => x.id !== s.id) }))} />)}</div>
+        <div className="mt-3 divide-y divide-border">{data.steps.slice(-8).reverse().map((s) => <LogRow key={s.id} what="steps entry" title={`${s.steps.toLocaleString()} steps`} detail={fmtDate(s.date)} right={`${s.km.toFixed(2)} km`} onDelete={() => update((c) => ({ ...c, steps: c.steps.filter((x) => x.id !== s.id) }))} />)}</div>
         {!data.steps.length && <Empty>Your movement entries will appear here.</Empty>}
       </Card>
     </>

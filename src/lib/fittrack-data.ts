@@ -6,7 +6,8 @@ export type PurchaseEntry = { id: string; date: string; item: string; amount: nu
 export type CodingEntry = { id: string; date: string; minutes: number; note: string };
 export type ReadingEntry = { id: string; date: string; pages: number; minutes: number; note: string };
 export type WorkoutEntry = { date: string; name: string; completed: string[]; coreDone: boolean; sets?: Record<string, number[]>; weights?: Record<string, number[]> };
-export type StepEntry = { id: string; date: string; steps: number; km: number; kind?: "steps" | "run"; minutes?: number };
+export type StepEntry = { id: string; date: string; steps: number; km: number };
+export type RunEntry = { id: string; date: string; km: number; seconds: number; steps: number; source: "gps" | "manual" };
 export type WorkoutOverride = { day: string; title: string; type: string; exercises: string[] };
 export type JournalEntry = { date: string; mood: Mood; text: string; updatedAt: string };
 export type Mood = "great" | "good" | "okay" | "low" | "rough";
@@ -41,7 +42,11 @@ export interface FitTrackData {
   rescheduledWorkouts?: Record<string, string>;
   workoutOverrides?: Record<string, WorkoutOverride>;
   videoLinks?: Record<string, string>;
+  /** Single exercise moves: `${fromDate}|${exercise}` -> new date. */
+  exerciseMoves?: Record<string, string>;
   steps?: StepEntry[];
+  runs?: RunEntry[];
+  runGoalKm?: number;
   journal?: Record<string, JournalEntry>;
   routine?: RoutineItem[];
   routineDone?: Record<string, string[]>;
@@ -59,13 +64,13 @@ export const CODING_TARGET_MINUTES = 240;
 export const DEFAULT_READING_PAGES = 15;
 
 export const workoutSchedule = [
-  { day: "Monday", title: "Rest & reset", type: "Rest", exercises: ["Recovery day", "Existing commitment · 10 AM–1 PM"] },
-  { day: "Tuesday", title: "Workout A · Full body", type: "Workout A", exercises: ["Goblet Squat · 3 × 10–12", "Dumbbell Floor Press · 3 × 8–12", "One-Arm Dumbbell Row · 3 × 10–12 each", "Romanian Deadlift · 3 × 10–12", "Bicep Curl · 2 × 10–15", "Push-ups · 2 × 10–15"] },
-  { day: "Wednesday", title: "Active recovery", type: "Recovery", exercises: ["Walk · 20–30 minutes", "Light stretching if needed"] },
-  { day: "Thursday", title: "Workout B · Upper + legs", type: "Workout B", exercises: ["Pull-ups · 3 × 3", "Dumbbell Shoulder Press · 3 × 8–12", "Reverse Lunges · 3 × 8–10 each leg", "Push-ups · 3 × 10–15", "Hammer Curls · 2 × 10–12"] },
-  { day: "Friday", title: "Rest & reset", type: "Rest", exercises: ["Recovery day", "Existing commitment · 5–10 PM"] },
-  { day: "Saturday", title: "Workout C · Full body", type: "Workout C", exercises: ["Dumbbell Split Squats · 3 × 8–10 each", "Chin-ups · 3 × 4–5", "Dumbbell Floor Press · 3 × 10–12", "Dumbbell Lateral Raises · 2 × 12–15", "Plank · 3 × 30–45 sec"] },
-  { day: "Sunday", title: "Rest & weekly review", type: "Review", exercises: ["Review workout progress", "Check strength improvements", "Prepare for the next week"] },
+  { day: "Monday", title: "Rest day", type: "Rest", exercises: ["Recovery day", "Existing commitment · 10 AM–1 PM"] },
+  { day: "Tuesday", title: "Workout A · Upper body", type: "Workout A", exercises: ["Pull-ups · 4 × 1–2", "Push-ups · 3 × 10–12", "One-Arm Dumbbell Rows · 3 × 10–12 each arm", "Dumbbell Shoulder Press · 3 × 10–12", "Dumbbell Lateral Raises · 3 × 12–15", "Concentration Curls · 2 × 10–12 each arm", "Dumbbell Reverse Curls · 2 × 12–15"] },
+  { day: "Wednesday", title: "Rest day", type: "Recovery", exercises: ["Recovery day", "Light stretching if needed"] },
+  { day: "Thursday", title: "Workout B · Lower body + abs", type: "Workout B", exercises: ["Goblet Squats · 3 × 12–15", "Dumbbell Romanian Deadlifts · 3 × 10–12", "Reverse Lunges · 3 × 10 each leg", "Dumbbell Glute Bridges · 3 × 12–15", "Reverse Crunches · 3 × 12–15", "Knee Tucks · 3 × 12–15", "Plank · 3 × 30–45 sec", "Dumbbell Side Bends · 2 × 12 each side"] },
+  { day: "Friday", title: "Rest day", type: "Rest", exercises: ["Recovery day", "Existing commitment · 5–10 PM"] },
+  { day: "Saturday", title: "Workout C · Full body", type: "Workout C", exercises: ["Chin-ups · 4 × 2–3", "Push-ups · 3 × 10–12", "Dumbbell Squats · 3 × 12", "Dumbbell Bent-over Rows · 3 × 10–12", "Dumbbell Shoulder Press · 2 × 10–12", "Dumbbell Hammer Curls · 3 × 10–12", "Dumbbell Wrist Curls · 2 × 12–15", "Reverse Crunches · 2 × 12–15", "Plank · 2 × 30–45 sec"] },
+  { day: "Sunday", title: "Rest + progress check", type: "Review", exercises: ["Review workout progress", "Check strength improvements", "Prepare for the next week"] },
 ];
 
 export const coreFinisher = ["Plank · 2–3 × 30–45 seconds", "Reverse Crunches · 2 × 12–15", "Knee Tucks · 2 × 10–12"];
@@ -96,11 +101,14 @@ export function mondayOf(dateString: string) {
   const date = new Date(`${dateString}T12:00:00`);
   const weekday = date.getDay();
   date.setDate(date.getDate() - ((weekday + 6) % 7));
+  if (Number.isNaN(date.getTime())) return "";
   return date.toISOString().slice(0, 10);
 }
 
 export function canRescheduleWorkout(originalDate: string, targetDate: string, today: string) {
-  return originalDate < today && targetDate > today && mondayOf(originalDate) === mondayOf(targetDate) && mondayOf(targetDate) === mondayOf(today);
+  // Any workout day (missed or upcoming) can move to another day, today or later, in the same week.
+  if (!originalDate || !targetDate || !today) return false;
+  return originalDate !== targetDate && targetDate >= today && mondayOf(originalDate) === mondayOf(targetDate) && mondayOf(targetDate) === mondayOf(today);
 }
 
 export type DayPlan = { day: string; title: string; type: string; exercises: string[] };
@@ -124,6 +132,15 @@ export function workoutForDate(date: string, reschedules: Record<string, string>
   }
 
   return regularDay;
+}
+
+/** A day's exercises after single-exercise moves: its own (minus moved-out) plus any moved in. */
+export function exercisesForDate(date: string, plan: DayPlan, exerciseMoves: Record<string, string> = {}) {
+  const own = plan.exercises.filter((ex) => !exerciseMoves[`${date}|${ex}`]).map((ex) => ({ ex, from: undefined as string | undefined }));
+  const movedIn = Object.entries(exerciseMoves).filter(([k, to]) => to === date && !k.startsWith(`${date}|`)).map(([k]) => { const i = k.indexOf("|"); return { ex: k.slice(i + 1), from: k.slice(0, i) as string | undefined }; });
+  // On a rest day, moved-in exercises replace the rest notes.
+  const base = movedIn.length && !plan.type.startsWith("Workout") ? [] : own;
+  return [...base, ...movedIn.filter((m) => !base.some((o) => o.ex === m.ex))];
 }
 
 export function weeklySpending(entries: PurchaseEntry[], date: string) {
@@ -316,4 +333,36 @@ export function topicKey(date: string, topic: string) {
 /** A topic counts as finished when the quiz has at least 2 right answers and the practice problem passed. */
 export function topicFinished(progress?: TopicProgress) {
   return (progress?.quizScore ?? 0) >= 2 && !!progress?.problemReview?.passed;
+}
+
+/** Great-circle distance between two GPS points, in km. */
+export function haversineKm(a: { lat: number; lon: number }, b: { lat: number; lon: number }) {
+  const r = (d: number) => (d * Math.PI) / 180;
+  const dLat = r(b.lat - a.lat), dLon = r(b.lon - a.lon);
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(r(a.lat)) * Math.cos(r(b.lat)) * Math.sin(dLon / 2) ** 2;
+  return 2 * 6371 * Math.asin(Math.sqrt(h));
+}
+
+/** Pace as m:ss per km, or "—" when distance is zero. */
+export function paceLabel(seconds: number, km: number) {
+  if (!(km > 0) || !(seconds > 0)) return "—";
+  const p = Math.round(seconds / km);
+  return `${Math.floor(p / 60)}:${String(p % 60).padStart(2, "0")} /km`;
+}
+
+export function durationLabel(seconds: number) {
+  const s = Math.max(0, Math.round(seconds));
+  const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
+  return h ? `${h}:${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}` : `${m}:${String(sec).padStart(2, "0")}`;
+}
+
+/** Running stride is longer than walking: ~0.65 × height. */
+export function estimateRunSteps(km: number, heightCm = HEIGHT_CM) {
+  if (!(km > 0)) return 0;
+  return Math.round((km * 100000) / (heightCm * 0.65));
+}
+
+export function weeklyRunKm(runs: RunEntry[], weekStart: string) {
+  const end = addDays(weekStart, 6);
+  return Math.round(runs.filter((r) => r.date >= weekStart && r.date <= end).reduce((t, r) => t + r.km, 0) * 100) / 100;
 }

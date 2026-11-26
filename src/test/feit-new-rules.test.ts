@@ -57,3 +57,13 @@ describe("routine reminders", () => {
     expect(dueRoutineItems("2026-11-18", 11 * 60 + 15, 11 * 60 + 30, defaultRoutine).map((i) => i.title)).toEqual(["Coding session 2"]);
   });
 });
+
+import { paceLabel as _pace, weeklyRunKm as _wk, estimateRunSteps as _rs } from "@/lib/fittrack-data";
+describe("running", () => {
+  it("pace is time per km", () => { expect(_pace(1500, 5)).toBe("5:00 /km"); expect(_pace(100, 0)).toBe("—"); });
+  it("weekly km counts Mon–Sun only", () => {
+    const r = (date: string, km: number) => ({ id: date, date, km, seconds: 600, steps: 0, source: "manual" as const });
+    expect(_wk([r("2026-11-22", 9), r("2026-11-23", 3), r("2026-11-29", 2.5), r("2026-11-30", 4)], "2026-11-23")).toBe(5.5);
+  });
+  it("run steps use longer stride", () => { expect(_rs(1)).toBe(932); });
+});

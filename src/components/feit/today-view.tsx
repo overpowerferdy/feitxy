@@ -14,7 +14,7 @@ export function TodayView() {
   const { data, today, hydrated } = useFeit();
   const { items, done, current, next } = useRoutineToday(today);
   const plan = today ? workoutForDate(today, data.rescheduledWorkouts, data.workoutOverrides) : undefined;
-  const steps = data.steps.filter((s) => s.date === today && s.kind !== "run").reduce((sum, s) => sum + s.steps, 0);
+  const steps = data.steps.filter((s) => s.date === today).reduce((sum, s) => sum + s.steps, 0);
   const km = data.steps.filter((s) => s.date === today).reduce((sum, s) => sum + s.km, 0);
   const sleep = data.sleep.find((s) => s.date === today);
   const protein = data.meals.filter((m) => m.date === today).reduce((sum, m) => sum + m.protein, 0);
