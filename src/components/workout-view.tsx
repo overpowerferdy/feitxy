@@ -10,6 +10,7 @@ import { ExerciseCard, exerciseKey } from "@/components/feit/workout-exercise-ca
 import { PageHeader } from "@/components/feit/ui";
 import { addDays, canRescheduleWorkout, coreFinisher, mondayOf, parseSets, workoutForDate } from "@/lib/fittrack-data";
 import { fmtDate, useFeit } from "@/lib/feit-store";
+import { focusLockSupported } from "@/lib/focus-lock";
 import { useWorkoutSession } from "@/lib/use-workout-session";
 
 const FOCUS_PRESETS = [5, 15, 25, 45];
@@ -21,6 +22,7 @@ export function WorkoutView() {
   const [focusOpen, setFocusOpen] = useState(false);
   const [focusMinutes, setFocusMinutes] = useState("25");
   const [focusError, setFocusError] = useState("");
+  const [lockThis, setLockThis] = useState(true);
   const monday = addDays(mondayOf(rawToday || "2026-11-16"), weekOffset * 7);
   const week = Array.from({ length: 7 }, (_, i) => addDays(monday, i));
   const date = picked || (focus?.date && weekOffset === 0 ? focus.date : undefined) || (weekOffset === 0 ? rawToday : week[0]) || week[0]!;
@@ -42,9 +44,10 @@ export function WorkoutView() {
   }
   function undo() { update((c) => { const r = { ...c.rescheduledWorkouts }; const k = Object.keys(r).find((k) => k === date || r[k] === date); if (k) delete r[k]; return { ...c, rescheduledWorkouts: r }; }); }
   function startFocusSession(minutes: number) {
-    startFocus(date, minutes * 60);
+    startFocus(date, minutes * 60, lockThis);
+    update((c) => ({ ...c, focusLockOn: lockThis }));
     setFocusOpen(false);
-    notify(`Focus started: ${minutes} minutes, or until all logs are done.`);
+    notify(lockThis && focusLockSupported ? "Focus started — approve the phone pinning prompt." : `Focus started: ${minutes} minutes, or until all logs are done.`);
   }
   function submitFocus(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -67,7 +70,7 @@ export function WorkoutView() {
 
   return (
     <div className="space-y-5">
-      <PageHeader eyebrow="Move well, build steadily" title="Workouts" subtitle="Browse any week, watch a guide, then log reps, kg and rest." action={canTrack ? <Button size="sm" variant="outline" disabled={!!focus} onClick={() => { setFocusMinutes("25"); setFocusError(""); setFocusOpen(true); }}><Focus size={14} />{focus ? "Focus running" : "Focus mode"}</Button> : undefined} />
+      <PageHeader eyebrow="Move well, build steadily" title="Workouts" subtitle="Browse any week, watch a guide, then log reps, kg and rest." action={canTrack ? <Button size="sm" variant="outline" disabled={!!focus} onClick={() => { setFocusMinutes("25"); setFocusError(""); setLockThis(data.focusLockOn); setFocusOpen(true); }}><Focus size={14} />{focus ? "Focus running" : "Focus mode"}</Button> : undefined} />
 
       <div className="flex items-center justify-between gap-2 rounded-2xl border border-border bg-card px-2 py-2">
         <Button type="button" size="icon" variant="ghost" aria-label="Previous week" onClick={() => { setWeekOffset((w) => w - 1); setPicked(""); }}><ChevronLeft size={18} /></Button>
@@ -130,6 +133,7 @@ export function WorkoutView() {
           <form className="grid gap-3" onSubmit={submitFocus}>
             <div className="grid grid-cols-4 gap-2">{FOCUS_PRESETS.map((m) => <Button key={m} type="button" size="sm" variant={focusMinutes === String(m) ? "default" : "outline"} onClick={() => { setFocusMinutes(String(m)); setFocusError(""); }}>{m} min</Button>)}</div>
             <label className="grid gap-1 text-xs font-bold text-muted-foreground">Custom minutes (1–180)<Input type="number" min="1" max="180" inputMode="numeric" value={focusMinutes} onChange={(e) => { setFocusMinutes(e.target.value); setFocusError(""); }} /></label>
+            {focusLockSupported && <label className="flex items-start gap-3 rounded-xl border border-border p-3 text-sm"><input type="checkbox" checked={lockThis} onChange={(e) => setLockThis(e.target.checked)} className="mt-0.5 size-4 accent-primary" /><span><strong>Lock phone to Feit</strong><span className="block text-xs text-muted-foreground">Android will ask to pin the app. While pinned, other apps and Recents stay blocked until focus ends.</span></span></label>}
             {focusError && <p className="text-sm text-destructive" role="alert">{focusError}</p>}
             <DialogFooter className="gap-2"><Button type="button" variant="ghost" onClick={() => setFocusOpen(false)}>Cancel</Button><Button type="submit"><Focus size={14} />Start focus</Button></DialogFooter>
           </form>

@@ -75,8 +75,8 @@ describe("focus session completion", () => {
     const sets = Object.fromEntries(exercises.map((ex) => [ex, Array(parseSets(ex.split(" · ")[1])?.count ?? 0).fill(10)]));
     const base = createEmptyData();
     expect(workoutDayComplete(base, date)).toBe(false);
-    expect(workoutDayComplete({ ...base, workouts: [{ date, name: "Workout A", completed: [], sets, weights: {} }] }, date)).toBe(true);
+    expect(workoutDayComplete({ ...base, workouts: [{ date, name: "Workout A", completed: [], coreDone: false, sets, weights: {} }] }, date)).toBe(true);
     const missingOne = { ...sets, [exercises[0]!]: [] };
-    expect(workoutDayComplete({ ...base, workouts: [{ date, name: "Workout A", completed: [], sets: missingOne, weights: {} }] }, date)).toBe(false);
+    expect(workoutDayComplete({ ...base, workouts: [{ date, name: "Workout A", completed: [], coreDone: false, sets: missingOne, weights: {} }] }, date)).toBe(false);
   });
 });

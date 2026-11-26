@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CheckCircle2, Clock3, Lock, Timer } from "lucide-react";
+import { isFeitLocked, lockToFeit, unlockFromFeit } from "@/lib/focus-lock";
 import { Button } from "@/components/ui/button";
 import { ExerciseCard, exerciseKey } from "@/components/feit/workout-exercise-card";
 import { parseSets, workoutDayComplete } from "@/lib/fittrack-data";
@@ -36,6 +37,25 @@ function FocusSessionOverlay({ focus }: { focus: FocusSession }) {
     window.addEventListener("popstate", blockBack);
     return () => { window.removeEventListener("keydown", blockEscape, true); window.removeEventListener("popstate", blockBack); };
   }, []);
+
+  // Keep the phone pinned to Feit while the session is active. If the user
+  // unpins it, pin it again on the next check. The system still asks once first.
+  const wasPinned = useRef(false);
+  useEffect(() => {
+    if (!focus.lockRequested) return;
+    let disposed = false;
+    void lockToFeit().then((locked) => {
+      wasPinned.current = locked;
+      if (!locked && !disposed) notify("Phone pinning wasn't accepted — Feit is still locked inside the app.");
+    });
+    const check = window.setInterval(() => {
+      void isFeitLocked().then((locked) => {
+        if (locked) wasPinned.current = true;
+        else if (wasPinned.current) void lockToFeit().then((ok) => { wasPinned.current = ok; });
+      });
+    }, 4000);
+    return () => { disposed = true; window.clearInterval(check); wasPinned.current = false; void unlockFromFeit(); };
+  }, [focus.lockRequested, focus.startedAt, notify]);
 
   const remaining = Math.max(0, focus.endsAt - Date.now()) / 1000;
   const allLogged = workoutDayComplete(data, focus.date);

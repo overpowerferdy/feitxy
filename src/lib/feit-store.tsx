@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { createEmptyData, defaultRoutine, DEFAULT_READING_PAGES, DEFAULT_STEP_GOAL, emptyLearn, hasLogs, isFitTrackData, mergeData, STORAGE_KEY, type FitTrackData, type RoutineContext } from "@/lib/fittrack-data";
+import { focusLockSupported } from "@/lib/focus-lock";
 
 export type ThemeChoice = "light" | "dark" | "device";
 const THEME_KEY = "fittrack-theme";
@@ -12,7 +13,7 @@ const SYNCED_USER_KEY = "fittrack-synced-user";
 /** Active focus session. Kept on device so a reload cannot silently unlock the app. */
 const FOCUS_KEY = "fittrack-focus";
 
-export type FocusSession = { date: string; durationSec: number; startedAt: number; endsAt: number };
+export type FocusSession = { date: string; durationSec: number; startedAt: number; endsAt: number; lockRequested?: boolean };
 
 function readFocus(): FocusSession | null {
   if (typeof window === "undefined") return null;
@@ -53,6 +54,7 @@ export function withDefaults(data: FitTrackData): Required<FitTrackData> {
     learn: { ...emptyLearn(), ...(data.learn ?? {}) },
     stepGoal: data.stepGoal ?? DEFAULT_STEP_GOAL,
     remindersOn: data.remindersOn ?? false,
+    focusLockOn: data.focusLockOn ?? true,
     readingGoal: data.readingGoal ?? DEFAULT_READING_PAGES,
   };
 }
@@ -74,7 +76,7 @@ type Store = {
   lastSynced: string;
   routineCtx: RoutineContext;
   focus: FocusSession | null;
-  startFocus: (date: string, durationSec: number) => void;
+  startFocus: (date: string, durationSec: number, lock?: boolean) => void;
   endFocus: () => void;
 };
 
@@ -225,10 +227,10 @@ export function FeitProvider({ children }: { children: ReactNode }) {
     if (next === "device") window.localStorage.removeItem(THEME_KEY); else window.localStorage.setItem(THEME_KEY, next);
     setThemeState(next);
   }, []);
-  const startFocus = useCallback((date: string, durationSec: number) => {
+  const startFocus = useCallback((date: string, durationSec: number, lock = false) => {
     const seconds = Math.min(3 * 60 * 60, Math.max(60, Math.round(durationSec)));
     const now = Date.now();
-    setFocus({ date, durationSec: seconds, startedAt: now, endsAt: now + seconds * 1000 });
+    setFocus({ date, durationSec: seconds, startedAt: now, endsAt: now + seconds * 1000, lockRequested: focusLockSupported && lock });
   }, []);
   const endFocus = useCallback(() => setFocus(null), []);
 

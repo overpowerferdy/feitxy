@@ -48,6 +48,9 @@ jobs:
       run: |
         npx cap add android || echo "Android platform already exists"
 
+        # Add the tracked screen-pinning plugin sources to the generated project
+        node scripts/copy-focus-lock.js
+
         # Generate Android icons and register the Google sign-in callback
         npm run build:icons
         node scripts/add-android-deeplink.js

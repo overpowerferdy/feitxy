@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type ChangeEvent, type MouseEvent } from "
 import { flushSync } from "react-dom";
 import { Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { ArrowDownToLine, ArrowUpFromLine, Bell, BellOff, Footprints, Laptop, Loader2, LogOut, Moon, Palette, Sun, Trash2, UserRound } from "lucide-react";
+import { ArrowDownToLine, ArrowUpFromLine, Bell, BellOff, Footprints, Laptop, Loader2, Lock, LogOut, Moon, Palette, Sun, Trash2, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardTitle, PageHeader } from "@/components/feit/ui";
@@ -11,6 +11,7 @@ import { createEmptyData, isFitTrackData } from "@/lib/fittrack-data";
 import { useFeit, type ThemeChoice } from "@/lib/feit-store";
 import { getPushPublicKey, removePushSubscription, savePushSubscription, sendTestPush } from "@/lib/push.functions";
 import { currentSubscription, disablePush, enablePush, pushSupport, type PushSupport } from "@/lib/push-client";
+import { focusLockSupported } from "@/lib/focus-lock";
 
 export function SettingsView() {
   return (
@@ -18,6 +19,7 @@ export function SettingsView() {
       <PageHeader eyebrow="Make it yours" title="Settings" />
       <div className="feit-stagger space-y-5">
         <Appearance />
+        <FocusLockSetting />
         <Reminders />
         <Account />
         <Goals />
@@ -42,6 +44,25 @@ function Appearance() {
     <Card className="p-5 sm:p-6">
       <CardTitle icon={Palette} title="Theme" hint="Choose how Feit looks." />
       <div className="grid grid-cols-3 gap-2">{options.map(({ value, label, icon: Icon }) => <button key={value} type="button" aria-pressed={theme === value} onClick={(e) => pick(value, e)} className={`flex flex-col items-center gap-1.5 rounded-xl border py-3 text-xs font-semibold transition-all active:scale-95 sm:text-sm ${theme === value ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card hover:bg-muted"}`}><Icon size={20} />{label}</button>)}</div>
+    </Card>
+  );
+}
+
+function FocusLockSetting() {
+  const { data, update, notify } = useFeit();
+  const on = data.focusLockOn;
+  return (
+    <Card className="p-5 sm:p-6">
+      <CardTitle icon={Lock} title="Lock phone to Feit" hint="During focus mode, keep the phone inside the Feit app." />
+      {focusLockSupported ? (
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="text-sm"><strong>{on ? "On" : "Off"}</strong> — Android will ask to pin Feit when a focus session starts.</p>
+          <Button variant={on ? "secondary" : "default"} size="sm" onClick={() => { update((c) => ({ ...c, focusLockOn: !on })); notify(on ? "Phone pinning turned off for focus mode." : "Phone pinning turned on for focus mode."); }}>{on ? "Turn off" : "Turn on"}</Button>
+        </div>
+      ) : (
+        <p className="rounded-xl bg-accent/40 p-4 text-sm">Available in the installed Android app. In a browser, focus mode still locks Feit's own screens.</p>
+      )}
+      <p className="mt-3 text-xs leading-relaxed text-muted-foreground">Screen pinning blocks other apps and Recents while focus runs. On a normal Android device you can still unpin with a long-press on Back/Recents; Feit re-pins automatically. An unbreakable lock needs Device Owner setup from your phone's administrator.</p>
     </Card>
   );
 }

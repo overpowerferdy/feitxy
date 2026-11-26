@@ -54,6 +54,8 @@ export interface FitTrackData {
   learn?: LearnProgress;
   stepGoal?: number;
   remindersOn?: boolean;
+  /** Pin the phone to Feit while a focus session is running (Android). */
+  focusLockOn?: boolean;
   readingGoal?: number;
 }
 

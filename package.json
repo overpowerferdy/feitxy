@@ -20,7 +20,7 @@
     "cap:sync": "cap sync",
     "cap:open:android": "cap open android",
     "cap:open:ios": "cap open ios",
-    "build:mobile": "npm run build:capacitor && npm run build:icons && node scripts/add-android-deeplink.js && cap sync",
+    "build:mobile": "npm run build:capacitor && npm run build:icons && node scripts/add-android-deeplink.js && node scripts/copy-focus-lock.js && cap sync",
     "android": "npm run build:mobile && cap open android",
     "ios": "npm run build:mobile && cap open ios"
   },
