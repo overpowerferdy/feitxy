@@ -5,8 +5,9 @@ export type MealEntry = { id: string; date: string; type: string; food: string; 
 export type PurchaseEntry = { id: string; date: string; item: string; amount: number };
 export type CodingEntry = { id: string; date: string; minutes: number; note: string };
 export type ReadingEntry = { id: string; date: string; pages: number; minutes: number; note: string };
-export type WorkoutEntry = { date: string; name: string; completed: string[]; coreDone: boolean; sets?: Record<string, number[]> };
-export type StepEntry = { id: string; date: string; steps: number; km: number };
+export type WorkoutEntry = { date: string; name: string; completed: string[]; coreDone: boolean; sets?: Record<string, number[]>; weights?: Record<string, number[]> };
+export type StepEntry = { id: string; date: string; steps: number; km: number; kind?: "steps" | "run"; minutes?: number };
+export type WorkoutOverride = { day: string; title: string; type: string; exercises: string[] };
 export type JournalEntry = { date: string; mood: Mood; text: string; updatedAt: string };
 export type Mood = "great" | "good" | "okay" | "low" | "rough";
 export type RoutineItem = { id: string; title: string; start: string; end?: string | undefined };
@@ -38,6 +39,8 @@ export interface FitTrackData {
   readingNotes: string;
   roadmap: Record<string, string[]>;
   rescheduledWorkouts?: Record<string, string>;
+  workoutOverrides?: Record<string, WorkoutOverride>;
+  videoLinks?: Record<string, string>;
   steps?: StepEntry[];
   journal?: Record<string, JournalEntry>;
   routine?: RoutineItem[];
@@ -101,7 +104,9 @@ export function canRescheduleWorkout(originalDate: string, targetDate: string, t
 }
 
 export type DayPlan = { day: string; title: string; type: string; exercises: string[] };
-export function workoutForDate(date: string, reschedules: Record<string, string> = {}): DayPlan {
+export function workoutForDate(date: string, reschedules: Record<string, string> = {}, overrides: Record<string, WorkoutOverride> = {}): DayPlan {
+  const custom = overrides[date];
+  if (custom?.exercises?.length) return custom;
   const weekdayIndex = (new Date(`${date}T12:00:00`).getDay() + 6) % 7;
   const regularDay = workoutSchedule[weekdayIndex] ?? workoutSchedule[0];
   if (!regularDay) return workoutSchedule[0]!;

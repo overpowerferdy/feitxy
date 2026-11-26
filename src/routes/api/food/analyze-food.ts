@@ -9,7 +9,7 @@ const schema = {
   additionalProperties: false,
   required: [
     'isFood', 'food', 'portion', 'calories', 'protein', 'carbs', 'fat', 'fiber',
-    'nutrients', 'benefits', 'tips', 'confidence',
+    'nutrients', 'benefits', 'tips', 'confidence', 'sourceName', 'sourceUrl',
   ],
   properties: {
     isFood: { type: 'boolean', description: 'false when the photo shows no food or drink' },
@@ -24,6 +24,8 @@ const schema = {
     benefits: strArr,
     tips: strArr,
     confidence: { type: 'string', enum: ['high', 'medium', 'low'] },
+    sourceName: { type: 'string', description: 'Short name of the nutrition reference used' },
+    sourceUrl: { type: 'string', description: 'A real public http(s) URL for the nutrition reference; use https://fdc.nal.usda.gov/ unless a more specific reliable source is known' },
   },
 };
 
@@ -45,7 +47,7 @@ export const Route = createFileRoute('/api/food/analyze-food')({
 
         try {
           const result = await askJson<FoodAnalysis>(
-            'You are a friendly nutrition helper inside Feit, a personal fitness tracker for a young adult in the Philippines who does dumbbell and bodyweight strength training and is watching protein on a small food budget. Look at the photo, identify the food (Filipino dishes are common), estimate the portion and its nutrition for what is visible. Numbers are rough estimates; round calories to the nearest 10 and grams to whole numbers. Benefits and tips are one short sentence each, plain words, no medical claims or diagnoses. If there is no food, set isFood=false, zeros for numbers and empty lists.',
+            'You are a friendly nutrition helper inside Feit, a personal fitness tracker for a young adult in the Philippines who does dumbbell and bodyweight strength training and is watching protein on a small food budget. Look at the photo, identify the food (Filipino dishes are common), estimate the portion and its nutrition for what is visible. Numbers are rough estimates; round calories to the nearest 10 and grams to whole numbers. Benefits and tips are one short sentence each, plain words, no medical claims or diagnoses. Always return sourceName and sourceUrl pointing to a real public nutrition reference (prefer USDA FoodData Central at https://fdc.nal.usda.gov/). Never invent a URL to a page you have not seen. If there is no food, set isFood=false, zeros for numbers and empty lists.',
             [{
               role: 'user',
               content: [

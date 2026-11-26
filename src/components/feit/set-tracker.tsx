@@ -1,28 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import { Minus, Pause, Play, Plus, RotateCcw, SkipForward, Timer, Undo2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { parseSets } from "@/lib/fittrack-data";
+import { playTimerAlert } from "@/lib/timer-sound";
 
 const REST_SECONDS = 90;
 
 function clock(sec: number) {
   const s = Math.max(0, Math.round(sec));
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
-}
-
-/** Short beep + buzz so you notice without looking at the screen. */
-function signal() {
-  try { navigator.vibrate?.([180, 80, 180]); } catch { /* not supported */ }
-  try {
-    const Ctx = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-    if (!Ctx) return;
-    const ctx = new Ctx();
-    const osc = ctx.createOscillator(); const gain = ctx.createGain();
-    osc.frequency.value = 880; gain.gain.value = 0.08;
-    osc.connect(gain).connect(ctx.destination);
-    osc.start(); osc.stop(ctx.currentTime + 0.25);
-    osc.onended = () => void ctx.close();
-  } catch { /* audio blocked */ }
 }
 
 function useTick(active: boolean) {
@@ -34,14 +21,18 @@ function useTick(active: boolean) {
   }, [active]);
 }
 
-/** Per-set logging: a reps counter (or a timer for timed holds) and a rest countdown between sets. */
-export function SetTracker({ name, sets, logged, onChange }: { name: string; sets?: string | undefined; logged: number[]; onChange: (next: number[]) => void }) {
+/** Per-set logging: reps + kg (or a timer for holds), and a rest countdown between sets. */
+export function SetTracker({ name, sets, logged, weights = [], onChange }: { name: string; sets?: string | undefined; logged: number[]; weights?: number[] | undefined; onChange: (next: number[], nextWeights: number[]) => void }) {
   const plan = parseSets(sets);
   const [reps, setReps] = useState(plan?.low ?? 10);
+  const [kg, setKg] = useState(() => {
+    const last = weights[weights.length - 1];
+    return last && last > 0 ? String(last) : "";
+  });
   const [startedAt, setStartedAt] = useState<number | null>(null);
   const [heldMs, setHeldMs] = useState(0);
   const [restEnd, setRestEnd] = useState<number | null>(null);
-  const beeped = useRef({ low: false, high: false, rest: false });
+  const beeped = useRef({ low: false, high: false, rest: false, finish: false });
   const running = startedAt !== null;
   useTick(running || restEnd !== null);
   if (!plan) return null;
@@ -49,20 +40,24 @@ export function SetTracker({ name, sets, logged, onChange }: { name: string; set
   const elapsed = (heldMs + (running ? Date.now() - startedAt : 0)) / 1000;
   const restLeft = restEnd ? (restEnd - Date.now()) / 1000 : 0;
   if (running && plan.timed) {
-    if (!beeped.current.low && elapsed >= plan.low) { beeped.current.low = true; signal(); }
-    if (!beeped.current.high && elapsed >= plan.high) { beeped.current.high = true; signal(); }
+    if (!beeped.current.low && elapsed >= plan.low) { beeped.current.low = true; playTimerAlert("finish"); }
+    if (!beeped.current.high && elapsed >= plan.high) { beeped.current.high = true; playTimerAlert("finish"); }
   }
-  if (restEnd && restLeft <= 0 && !beeped.current.rest) { beeped.current.rest = true; signal(); window.setTimeout(() => setRestEnd(null), 0); }
+  if (restEnd && restLeft <= 0 && !beeped.current.rest) { beeped.current.rest = true; playTimerAlert("rest"); window.setTimeout(() => setRestEnd(null), 0); }
 
   const doneAll = logged.length >= plan.count;
   const unit = plan.timed ? "sec" : "reps";
   function resetTimer() { setStartedAt(null); setHeldMs(0); beeped.current.low = false; beeped.current.high = false; }
+  function weightValues() {
+    const value = Number(kg);
+    return [...weights, Number.isFinite(value) && value > 0 ? Math.round(value * 100) / 100 : 0];
+  }
   function logSet() {
     const value = plan!.timed ? Math.round(elapsed) || plan!.low : reps;
-    const next = [...logged, value];
-    onChange(next);
+    onChange([...logged, value], plan!.timed ? [...weights, 0] : weightValues());
     resetTimer();
-    if (next.length < plan!.count) { beeped.current.rest = false; setRestEnd(Date.now() + REST_SECONDS * 1000); } else setRestEnd(null);
+    if (logged.length + 1 >= plan!.count) { setRestEnd(null); playTimerAlert("finish"); }
+    else { beeped.current.rest = false; setRestEnd(Date.now() + REST_SECONDS * 1000); }
   }
 
   return (
@@ -74,13 +69,14 @@ export function SetTracker({ name, sets, logged, onChange }: { name: string; set
       <div className="mt-2 flex flex-wrap gap-1.5">
         {Array.from({ length: plan.count }, (_, i) => {
           const value = logged[i];
+          const kgValue = weights[i];
           const current = i === logged.length;
-          return <span key={i} className={`flex h-9 min-w-9 items-center justify-center rounded-lg px-2 text-sm font-bold tabular-nums transition-colors ${value !== undefined ? "feit-pop bg-primary text-primary-foreground" : current ? "border-2 border-primary bg-card text-foreground" : "border border-border bg-card text-muted-foreground"}`} title={value !== undefined ? `Set ${i + 1}: ${value} ${unit}` : `Set ${i + 1}`}>{value ?? i + 1}</span>;
+          return <span key={i} className={`flex h-9 min-w-9 items-center justify-center rounded-lg px-2 text-sm font-bold tabular-nums transition-colors ${value !== undefined ? "feit-pop bg-primary text-primary-foreground" : current ? "border-2 border-primary bg-card text-foreground" : "border border-border bg-card text-muted-foreground"}`} title={value !== undefined ? `Set ${i + 1}: ${value} ${unit}${kgValue ? ` · ${kgValue} kg` : ""}` : `Set ${i + 1}`}>{value ?? i + 1}</span>;
         })}
       </div>
 
       {restEnd !== null && restLeft > 0 && (
-        <div className="mt-3 flex items-center justify-between gap-2 rounded-lg bg-accent/60 px-3 py-2 text-accent-foreground">
+        <div className="mt-3 flex items-center justify-between gap-2 rounded-lg bg-accent/60 px-3 py-2 text-accent-foreground" aria-live="polite">
           <span className="flex items-center gap-2 text-sm font-bold"><Timer size={16} />Rest {clock(restLeft)}</span>
           <div className="flex gap-1">
             <Button type="button" size="sm" variant="ghost" className="h-8 px-2 text-xs" onClick={() => setRestEnd((e) => (e ?? Date.now()) + 30000)}>+30s</Button>
@@ -98,17 +94,22 @@ export function SetTracker({ name, sets, logged, onChange }: { name: string; set
               {elapsed > 0 && !running && <Button type="button" size="icon" variant="ghost" className="size-8" aria-label="Reset timer" onClick={resetTimer}><RotateCcw size={14} /></Button>}
             </>
           ) : (
-            <div className="flex items-center rounded-lg border border-border bg-card">
-              <Button type="button" size="icon" variant="ghost" className="size-9" aria-label="One less rep" onClick={() => setReps((r) => Math.max(0, r - 1))}><Minus size={16} /></Button>
-              <span className="min-w-14 text-center text-lg font-extrabold tabular-nums" aria-live="polite">{reps}<span className="ml-1 text-xs font-semibold text-muted-foreground">reps</span></span>
-              <Button type="button" size="icon" variant="ghost" className="size-9" aria-label="One more rep" onClick={() => setReps((r) => r + 1)}><Plus size={16} /></Button>
-            </div>
+            <>
+              <div className="flex items-center rounded-lg border border-border bg-card">
+                <Button type="button" size="icon" variant="ghost" className="size-9" aria-label="One less rep" onClick={() => setReps((r) => Math.max(0, r - 1))}><Minus size={16} /></Button>
+                <span className="min-w-14 text-center text-lg font-extrabold tabular-nums" aria-live="polite">{reps}<span className="ml-1 text-xs font-semibold text-muted-foreground">reps</span></span>
+                <Button type="button" size="icon" variant="ghost" className="size-9" aria-label="One more rep" onClick={() => setReps((r) => r + 1)}><Plus size={16} /></Button>
+              </div>
+              <label className="flex items-center gap-1 rounded-lg border border-border bg-card px-2 text-xs font-bold text-muted-foreground">kg
+                <Input type="number" inputMode="decimal" min="0" step="0.5" placeholder="—" value={kg} onChange={(e) => setKg(e.target.value)} aria-label={`Weight in kg for ${name}`} className="h-9 w-16 border-0 bg-transparent px-0 text-center text-sm font-extrabold text-foreground" />
+              </label>
+            </>
           )}
           <Button type="button" size="sm" className="ml-auto" onClick={logSet}>Log set {logged.length + 1}</Button>
         </div>
       ) : <p className="mt-3 text-sm font-semibold text-primary">All {plan.count} sets done — nice work!</p>}
 
-      {logged.length > 0 && <button type="button" className="mt-2 flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-foreground" onClick={() => { onChange(logged.slice(0, -1)); setRestEnd(null); }}><Undo2 size={12} />Undo last set</button>}
+      {logged.length > 0 && <button type="button" className="mt-2 flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-foreground" onClick={() => { onChange(logged.slice(0, -1), weights.slice(0, -1)); setRestEnd(null); }}><Undo2 size={12} />Undo last set</button>}
     </div>
   );
 }

@@ -1,11 +1,14 @@
-import { useState } from "react";
-import { ArrowRight, Check, Clock3, Flame, Image as ImageIcon, Play, ShieldCheck } from "lucide-react";
+import { useEffect, useState, type FormEvent } from "react";
+import { ArrowRight, Check, ChevronLeft, ChevronRight, Clock3, Flame, Focus, Image as ImageIcon, Link2, Pencil, Play, ShieldCheck, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { CoachPanel } from "@/components/coach-panel";
 import { DayPhoto } from "@/components/feit/photo-panel";
 import { SetTracker } from "@/components/feit/set-tracker";
 import { PageHeader } from "@/components/feit/ui";
-import { canRescheduleWorkout, coreFinisher, mondayOf, parseSets, workoutForDate } from "@/lib/fittrack-data";
+import { addDays, canRescheduleWorkout, coreFinisher, mondayOf, parseSets, workoutForDate } from "@/lib/fittrack-data";
 import { fmtDate, useFeit } from "@/lib/feit-store";
 
 const images = import.meta.glob("@/assets/exercises/*.jpg", { eager: true, import: "default" }) as Record<string, string>;
@@ -40,13 +43,37 @@ const map: [string, string, string, string | null][] = [
   ["stretching", "recovery-pose", "Gentle, no bouncing.", null],
 ];
 const guide = (exercise: string) => map.find(([k]) => exercise.includes(k));
+const exerciseKey = (exercise: string) => exercise.split(" · ")[0]?.trim().toLowerCase() ?? "";
 
-function ExerciseCard({ ex, checked, onToggle, canCheck, logged, onLog }: { ex: string; checked: boolean; onToggle?: () => void; canCheck: boolean; logged?: number[] | undefined; onLog?: ((next: number[]) => void) | undefined }) {
+/** Accepts a YouTube URL, nocookie embed URL, or a bare 11-character video ID. */
+function videoIdFrom(input: string) {
+  const value = input.trim();
+  if (!value) return null;
+  if (/^[\w-]{11}$/.test(value)) return value;
+  try {
+    const url = new URL(value);
+    if (url.hostname.endsWith("youtu.be")) return url.pathname.slice(1).split("/")[0] ?? null;
+    const fromQuery = url.searchParams.get("v");
+    const fromEmbed = /\/embed\/([\w-]{11})/.exec(url.pathname)?.[1];
+    const id = fromQuery ?? fromEmbed;
+    return id && /^[\w-]{11}$/.test(id) ? id : null;
+  } catch { return null; }
+}
+
+function ExerciseCard({ ex, checked, onToggle, canCheck, logged, weights, onLog, videoId, onSaveVideo }: {
+  ex: string; checked: boolean; onToggle?: () => void; canCheck: boolean;
+  logged?: number[] | undefined; weights?: number[] | undefined;
+  onLog?: ((next: number[], nextWeights: number[]) => void) | undefined;
+  videoId?: string | undefined; onSaveVideo: (id: string) => void;
+}) {
   const g = guide(ex);
   const src = g && img(g[1]);
-  const video = g?.[3];
+  const video = videoId || g?.[3] || undefined;
   const [name, sets] = ex.split(" · ");
   const [mode, setMode] = useState<"picture" | "video">("picture");
+  const [videoOpen, setVideoOpen] = useState(false);
+  const [draft, setDraft] = useState("");
+  const [videoError, setVideoError] = useState("");
   return (
     <article className={`feit-lift overflow-hidden rounded-2xl border bg-card ${checked ? "border-primary/50 bg-secondary/40" : "border-border"}`}>
       <div className="relative aspect-[4/3] bg-muted">
@@ -66,42 +93,62 @@ function ExerciseCard({ ex, checked, onToggle, canCheck, logged, onLog }: { ex: 
           {canCheck && <button aria-label={`Mark ${name} done`} onClick={onToggle} className={`flex size-10 shrink-0 items-center justify-center rounded-full border-2 transition-colors active:scale-90 ${checked ? "feit-pop border-primary bg-primary text-primary-foreground" : "border-input text-muted-foreground hover:border-primary"}`}><Check size={18} strokeWidth={3} /></button>}
         </div>
         {g && <p className="mt-2 text-sm text-muted-foreground">{g[2]}</p>}
-        {onLog && <SetTracker name={name ?? ex} sets={sets} logged={logged ?? []} onChange={onLog} />}
+        {onLog && <SetTracker name={name ?? ex} sets={sets} logged={logged ?? []} weights={weights} onChange={onLog} />}
+        <button type="button" onClick={() => { setDraft(video ?? ""); setVideoError(""); setVideoOpen(true); }} className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-muted-foreground transition-colors hover:text-primary"><Link2 size={13} />Edit video link</button>
       </div>
+      <Dialog open={videoOpen} onOpenChange={setVideoOpen}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Video for {name}</DialogTitle><DialogDescription>Paste a YouTube link or video ID. Leave it empty to restore the default guide.</DialogDescription></DialogHeader>
+          <form className="grid gap-3" onSubmit={(e) => { e.preventDefault(); const parsed = draft.trim() ? videoIdFrom(draft) : null; if (draft.trim() && !parsed) { setVideoError("Use a YouTube link or an 11-character video ID."); return; } onSaveVideo(parsed ?? ""); setVideoOpen(false); }}>
+            <Input value={draft} onChange={(e) => { setDraft(e.target.value); setVideoError(""); }} placeholder="https://youtube.com/watch?v=…" aria-label="YouTube link" />
+            {videoError && <p className="text-sm text-destructive" role="alert">{videoError}</p>}
+            <DialogFooter className="gap-2">
+              <Button type="button" variant="ghost" onClick={() => setVideoOpen(false)}>Cancel</Button>
+              {video && <Button type="button" variant="outline" onClick={() => { onSaveVideo(""); setVideoOpen(false); }}><Trash2 size={14} />Remove</Button>}
+              <Button type="submit">Save link</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </article>
   );
 }
 
 export function WorkoutView() {
   const { data, update, today, notify } = useFeit();
-  const monday = today ? mondayOf(today) : "2026-11-16";
-  const week = Array.from({ length: 7 }, (_, i) => { const d = new Date(`${monday}T12:00:00`); d.setDate(d.getDate() + i); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; });
-  const [picked, setPicked] = useState<string>("");
-  const date = picked || today || week[0]!;
+  const [weekOffset, setWeekOffset] = useState(0);
+  const [picked, setPicked] = useState("");
+  const [focus, setFocus] = useState(false);
+  const monday = addDays(mondayOf(today || "2026-11-16"), weekOffset * 7);
+  const week = Array.from({ length: 7 }, (_, i) => addDays(monday, i));
+  const date = picked || (weekOffset === 0 ? today : week[0]) || week[0]!;
   const moves = data.rescheduledWorkouts;
-  const plan = workoutForDate(date, moves);
+  const overrides = data.workoutOverrides;
+  const plan = workoutForDate(date, moves, overrides);
   const entry = data.workouts.find((w) => w.date === date && w.name === plan.type);
   const done = entry?.completed ?? [];
   const isWorkout = plan.type.startsWith("Workout");
-  const isMissed = isWorkout && date < today && !moves[date] && done.length === 0;
-  const freeDays = week.filter((d) => canRescheduleWorkout(date, d, today) && !workoutForDate(d, moves).type.startsWith("Workout") && !Object.values(moves).includes(d));
+  const isMissed = weekOffset === 0 && isWorkout && date < today && !moves[date] && done.length === 0;
+  const freeDays = week.filter((d) => canRescheduleWorkout(date, d, today) && !workoutForDate(d, moves, overrides).type.startsWith("Workout") && !Object.values(moves).includes(d));
 
   const setsLog = entry?.sets ?? {};
-  function save(completed: string[], coreDone: boolean, sets: Record<string, number[]> = setsLog) {
-    update((c) => ({ ...c, workouts: [...c.workouts.filter((w) => !(w.date === date && w.name === plan.type)), { date, name: plan.type, completed, coreDone, sets }] }));
+  const weightsLog = entry?.weights ?? {};
+  function save(completed: string[], coreDone: boolean, sets: Record<string, number[]> = setsLog, weights: Record<string, number[]> = weightsLog) {
+    update((c) => ({ ...c, workouts: [...c.workouts.filter((w) => !(w.date === date && w.name === plan.type)), { date, name: plan.type, completed, coreDone, sets, weights }] }));
   }
   const canTrack = isWorkout && !!today && date <= today;
-  /** Log sets; finishing every set ticks the exercise off automatically. */
-  function logSets(ex: string, next: number[], total: number | undefined) {
+  /** Log sets and their kg values; finishing every set ticks the exercise off automatically. */
+  function logSets(ex: string, next: number[], nextWeights: number[], total: number | undefined) {
     const sets = { ...setsLog, [ex]: next };
+    const weights = { ...weightsLog, [ex]: nextWeights };
     const complete = total !== undefined && next.length >= total;
     const completed = complete ? Array.from(new Set([...done, ex])) : done;
-    save(completed, entry?.coreDone ?? false, sets);
+    save(completed, entry?.coreDone ?? false, sets, weights);
     if (complete && !done.includes(ex)) notify(`${ex.split(" · ")[0]} done!`);
   }
   function move(from: string, to: string) {
-    const fromPlan = workoutForDate(from, moves);
-    if (!canRescheduleWorkout(from, to, today) || !fromPlan.type.startsWith("Workout") || workoutForDate(to, moves).type.startsWith("Workout")) { notify("That day can't take this workout."); return false; }
+    const fromPlan = workoutForDate(from, moves, overrides);
+    if (!canRescheduleWorkout(from, to, today) || !fromPlan.type.startsWith("Workout") || workoutForDate(to, moves, overrides).type.startsWith("Workout")) { notify("That day can't take this workout."); return false; }
     update((c) => ({ ...c, rescheduledWorkouts: { ...c.rescheduledWorkouts, [from]: to } }));
     notify(`${fromPlan.type} moved to ${fmtDate(to, { weekday: "long" })}.`);
     setPicked(to);
@@ -110,13 +157,76 @@ export function WorkoutView() {
   function undo() { update((c) => { const r = { ...c.rescheduledWorkouts }; const k = Object.keys(r).find((k) => k === date || r[k] === date); if (k) delete r[k]; return { ...c, rescheduledWorkouts: r }; }); }
   const movedFrom = Object.keys(moves).find((k) => moves[k] === date);
 
+  function savePlan(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const f = new FormData(e.currentTarget);
+    const title = String(f.get("title") ?? "").trim();
+    const type = String(f.get("type") ?? "Workout").trim();
+    const exercises = String(f.get("exercises") ?? "").split("\n").map((line) => line.trim()).filter(Boolean);
+    if (!title || !type || !exercises.length) { notify("Add a title and at least one exercise."); return; }
+    update((c) => ({ ...c, workoutOverrides: { ...c.workoutOverrides, [date]: { day: fmtDate(date, { weekday: "long" }), title, type, exercises } }, workouts: c.workouts.filter((w) => !(w.date === date)) }));
+    notify("Workout updated for this day.");
+  }
+  function deleteWorkout() {
+    if (!window.confirm(`Delete ${plan.title} on ${fmtDate(date)}? Your edits and logged sets for this day will be removed.`)) return;
+    update((c) => {
+      const nextOverrides = { ...c.workoutOverrides };
+      delete nextOverrides[date];
+      return { ...c, workoutOverrides: nextOverrides, workouts: c.workouts.filter((w) => w.date !== date) };
+    });
+    notify("Workout deleted.");
+  }
+  function saveVideo(ex: string, id: string) {
+    const key = exerciseKey(ex);
+    update((c) => {
+      const links = { ...c.videoLinks };
+      if (id) links[key] = id; else delete links[key];
+      return { ...c, videoLinks: links };
+    });
+    notify(id ? "Video link updated." : "Default video restored.");
+  }
+
+  const totalSets = plan.exercises.reduce((sum, ex) => sum + (parseSets(ex.split(" · ")[1])?.count ?? 0), 0);
+  const loggedSets = plan.exercises.reduce((sum, ex) => sum + Math.min(setsLog[ex]?.length ?? 0, parseSets(ex.split(" · ")[1])?.count ?? 0), 0);
+  const focusComplete = totalSets > 0 ? loggedSets >= totalSets : done.length >= plan.exercises.length;
+
+  // While focus mode is open, keep the user inside the session until it is finished.
+  useEffect(() => {
+    if (!focus) return;
+    const blockEscape = (e: KeyboardEvent) => { if (e.key === "Escape") e.preventDefault(); };
+    const blockBack = () => window.history.pushState(null, "", window.location.href);
+    window.addEventListener("keydown", blockEscape, true);
+    window.addEventListener("popstate", blockBack);
+    window.history.pushState(null, "", window.location.href);
+    return () => { window.removeEventListener("keydown", blockEscape, true); window.removeEventListener("popstate", blockBack); };
+  }, [focus]);
+
+  function exerciseGrid() {
+    return (
+      <div className="feit-stagger mt-5 grid gap-4 sm:grid-cols-2">
+        {plan.exercises.map((ex) => {
+          const checked = done.includes(ex);
+          return <ExerciseCard key={ex} ex={ex} checked={checked} canCheck={isWorkout} onToggle={() => save(checked ? done.filter((x) => x !== ex) : [...done, ex], entry?.coreDone ?? false)} logged={setsLog[ex]} weights={weightsLog[ex]} videoId={data.videoLinks[exerciseKey(ex)]} onSaveVideo={(id) => saveVideo(ex, id)} onLog={canTrack ? (next, nextWeights) => logSets(ex, next, nextWeights, parseSets(ex.split(" · ")[1])?.count) : undefined} />;
+        })}
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-5">
-      <PageHeader eyebrow="Move well, build steadily" title="Workouts" subtitle="Pick a day. Watch the video, then count reps and time each set." />
+      <PageHeader eyebrow="Move well, build steadily" title="Workouts" subtitle="Browse any week, watch a guide, then log reps, kg and rest." action={canTrack ? <Button size="sm" variant="outline" onClick={() => setFocus(true)}><Focus size={14} />Focus mode</Button> : undefined} />
+
+      <div className="flex items-center justify-between gap-2 rounded-2xl border border-border bg-card px-2 py-2">
+        <Button type="button" size="icon" variant="ghost" aria-label="Previous week" onClick={() => { setWeekOffset((w) => w - 1); setPicked(""); }}><ChevronLeft size={18} /></Button>
+        <p className="text-sm font-extrabold tabular-nums">{fmtDate(week[0]!, { month: "short", day: "numeric" })} – {fmtDate(week[6]!, { month: "short", day: "numeric" })}{weekOffset === 0 ? " · This week" : ""}</p>
+        <Button type="button" size="icon" variant="ghost" aria-label="Next week" onClick={() => { setWeekOffset((w) => w + 1); setPicked(""); }}><ChevronRight size={18} /></Button>
+      </div>
+
       <div className="grid grid-cols-7 gap-1.5 sm:gap-2">
         {week.map((d) => { const active = d === date; const isToday = d === today;
           return <button key={d} onClick={() => setPicked(d)} aria-label={`Select ${fmtDate(d, { weekday: "long", month: "long", day: "numeric" })}`} aria-pressed={active} className={`relative min-w-0 rounded-xl border px-0.5 py-2.5 text-center transition-all duration-200 active:scale-95 ${active ? "-translate-y-0.5 border-primary bg-primary text-primary-foreground shadow-md" : "border-border bg-card hover:bg-muted"}`}>
             <span className={`text-sm font-bold ${active ? "" : "text-muted-foreground"}`}>{fmtDate(d, { weekday: "short" })}</span>
+            <span className={`block text-[0.65rem] tabular-nums ${active ? "" : "text-muted-foreground"}`}>{Number(d.slice(8))}</span>
             {isToday && <span className={`absolute bottom-1 left-1/2 size-1.5 -translate-x-1/2 rounded-full ${active ? "bg-accent" : "bg-primary"}`} />}
           </button>; })}
       </div>
@@ -130,23 +240,50 @@ export function WorkoutView() {
           {freeDays.length ? <div className="mt-3 flex flex-wrap gap-2">{freeDays.map((d) => <Button key={d} size="sm" variant="outline" onClick={() => window.confirm(`Move ${plan.type} to ${fmtDate(d, { weekday: "long" })}?`) && move(date, d)}><ArrowRight />{fmtDate(d, { weekday: "long" })}</Button>)}</div> : <p className="mt-1 text-sm text-muted-foreground">No free days left this week — that's okay, start fresh next week.</p>}</div>}
         {(movedFrom || moves[date]) && <Button size="sm" variant="ghost" className="mt-3" onClick={undo}>Undo move</Button>}
 
-        <div key={date} className="feit-stagger mt-5 grid gap-4 sm:grid-cols-2">
-          {plan.exercises.map((ex) => { const checked = done.includes(ex);
-            return <ExerciseCard key={ex} ex={ex} checked={checked} canCheck={isWorkout} onToggle={() => save(checked ? done.filter((x) => x !== ex) : [...done, ex], entry?.coreDone ?? false)} logged={setsLog[ex]} onLog={canTrack ? (next) => logSets(ex, next, parseSets(ex.split(" · ")[1])?.count) : undefined} />; })}
-        </div>
+        <details className="mt-4 rounded-xl bg-muted/60 p-4">
+          <summary className="flex cursor-pointer items-center gap-2 font-bold"><Pencil size={15} />Edit this workout</summary>
+          <form key={date} onSubmit={savePlan} className="mt-4 grid gap-3">
+            <label className="grid gap-1 text-xs font-bold text-muted-foreground">Title<Input name="title" defaultValue={plan.title} required /></label>
+            <label className="grid gap-1 text-xs font-bold text-muted-foreground">Type<Input name="type" defaultValue={plan.type} required /></label>
+            <label className="grid gap-1 text-xs font-bold text-muted-foreground">Exercises <span className="font-normal">(one per line, e.g. Goblet Squat · 3 × 10)</span><Textarea name="exercises" defaultValue={plan.exercises.join("\n")} rows={5} required /></label>
+            <div className="flex flex-wrap gap-2"><Button type="submit" size="sm">Save workout</Button><Button type="button" size="sm" variant="destructive" onClick={deleteWorkout}><Trash2 size={14} />Delete workout</Button></div>
+          </form>
+        </details>
 
-        {isWorkout && <details className="mt-5 rounded-2xl bg-muted/60 p-4"><summary className="cursor-pointer font-bold">Core finisher {entry?.coreDone ? "✓" : "(optional)"}</summary>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">{coreFinisher.map((ex) => <ExerciseCard key={ex} ex={ex} checked={false} canCheck={false} logged={setsLog[ex]} onLog={canTrack ? (next) => save(done, entry?.coreDone ?? false, { ...setsLog, [ex]: next }) : undefined} />)}</div>
+        {!focus && exerciseGrid()}
+
+        {!focus && isWorkout && <details className="mt-5 rounded-2xl bg-muted/60 p-4"><summary className="cursor-pointer font-bold">Core finisher {entry?.coreDone ? "✓" : "(optional)"}</summary>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">{coreFinisher.map((ex) => <ExerciseCard key={ex} ex={ex} checked={false} canCheck={false} logged={setsLog[ex]} weights={weightsLog[ex]} videoId={data.videoLinks[exerciseKey(ex)]} onSaveVideo={(id) => saveVideo(ex, id)} onLog={canTrack ? (next, nextWeights) => save(done, entry?.coreDone ?? false, { ...setsLog, [ex]: next }, { ...weightsLog, [ex]: nextWeights }) : undefined} />)}</div>
           <Button className="mt-4" variant={entry?.coreDone ? "secondary" : "default"} onClick={() => save(done, !entry?.coreDone)}>{entry?.coreDone ? "Completed" : "Mark core done"}</Button></details>}
 
-        {isWorkout && date <= today && <div className="mt-5"><DayPhoto date={date} /></div>}
+        {!focus && isWorkout && date <= today && <div className="mt-5"><DayPhoto date={date} /></div>}
       </section>
 
-      <CoachPanel area="workout" today={today} onApplyMove={move} logs={{ thisWeek: week.map((d) => ({ date: d, planned: workoutForDate(d, moves).type, done: data.workouts.find((w) => w.date === d)?.completed.length ?? 0 })), moves, strength: data.strength.slice(-6), recent: data.workouts.slice(-12) }} />
+      <CoachPanel area="workout" today={today} onApplyMove={move} logs={{ thisWeek: week.map((d) => ({ date: d, planned: workoutForDate(d, moves, overrides).type, done: data.workouts.find((w) => w.date === d)?.completed.length ?? 0 })), moves, strength: data.strength.slice(-6), recent: data.workouts.slice(-12) }} />
 
       <div className="grid gap-3 text-sm sm:grid-cols-3">
         {([[Flame, "Warm up 5–10 min"], [Clock3, "Rest 1–3 min between sets"], [ShieldCheck, "Stop if pain is sharp"]] as const).map(([Icon, t]) => <div key={t} className="flex items-center gap-3 rounded-2xl border border-border bg-card p-4"><Icon size={18} className="text-primary" />{t}</div>)}
       </div>
+
+      {focus && (
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-background" role="dialog" aria-modal="true" aria-label="Focus mode">
+          <div className="mx-auto max-w-3xl space-y-4 p-4 pb-28 sm:p-6">
+            <header className="sticky top-0 z-10 rounded-2xl border border-border bg-card/95 p-4 backdrop-blur">
+              <p className="text-xs font-bold uppercase tracking-wide text-primary">Focus mode</p>
+              <h2 className="mt-1 text-2xl font-extrabold">{plan.title}</h2>
+              <p className="mt-1 text-sm text-muted-foreground" aria-live="polite">{Math.min(loggedSets, totalSets)} / {totalSets || plan.exercises.length} sets · {done.length} / {plan.exercises.length} exercises done</p>
+              <div className="mt-3 h-2 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-primary transition-all" style={{ width: `${focusComplete ? 100 : Math.round((totalSets ? loggedSets / totalSets : done.length / plan.exercises.length) * 100)}%` }} /></div>
+            </header>
+            {exerciseGrid()}
+            <div className="fixed inset-x-0 bottom-0 border-t border-border bg-card/95 p-4 backdrop-blur">
+              <div className="mx-auto flex max-w-3xl items-center justify-between gap-3">
+                <p className="text-sm text-muted-foreground">{focusComplete ? "Session complete — great work!" : "Finish every set to leave focus mode."}</p>
+                <Button disabled={!focusComplete} onClick={() => { setFocus(false); setPicked(date); notify("Focus mode finished."); }}>Finish session</Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

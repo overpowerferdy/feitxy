@@ -14,6 +14,8 @@ export type FoodAnalysis = {
   benefits: string[];
   tips: string[];
   confidence: "high" | "medium" | "low";
+  sourceName?: string;
+  sourceUrl?: string;
 };
 
 // Food analysis API endpoint

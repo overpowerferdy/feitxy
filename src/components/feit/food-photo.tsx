@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { Camera, Images, Leaf, Loader2, Plus, Sparkles, X } from "lucide-react";
+import { Camera, ExternalLink, Images, Leaf, Loader2, Plus, Sparkles, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardTitle } from "@/components/feit/ui";
@@ -98,6 +98,8 @@ export function FoodPhotoCard() {
 }
 
 function FoodResult({ r, onAdd, onRecheck }: { r: FoodAnalysis; onAdd: () => void; onRecheck: () => void }) {
+  let source: string | null = null;
+  try { if (r.sourceUrl) { const u = new URL(r.sourceUrl); if (["http:", "https:"].includes(u.protocol)) source = u.href; } } catch { source = null; }
   const macros: [string, number, string][] = [["Protein", r.protein, "g"], ["Carbs", r.carbs, "g"], ["Fat", r.fat, "g"], ["Fiber", r.fiber, "g"]];
   return (
     <div className="grid gap-3 text-sm">
@@ -112,6 +114,7 @@ function FoodResult({ r, onAdd, onRecheck }: { r: FoodAnalysis; onAdd: () => voi
       {r.nutrients.length > 0 && <div className="flex flex-wrap gap-1.5">{r.nutrients.map((n) => <span key={n} className="rounded-full bg-secondary px-2.5 py-1 text-xs font-semibold text-secondary-foreground">{n}</span>)}</div>}
       {r.tips.length > 0 && <div><p className="mb-1 text-xs font-bold uppercase text-primary">Make it better</p><ul className="grid gap-1">{r.tips.map((t) => <li key={t}>• {t}</li>)}</ul></div>}
       <p className="text-xs text-muted-foreground">Estimates from a photo — use them as a guide, not exact numbers.</p>
+      {source && <a href={source} target="_blank" rel="noopener noreferrer" className="inline-flex w-fit items-center gap-1.5 rounded-lg bg-muted px-3 py-2 text-xs font-bold text-primary hover:bg-secondary"><ExternalLink size={13} />Reference: {r.sourceName || "nutrition source"}</a>}
       <div className="flex flex-wrap gap-2"><Button size="sm" onClick={onAdd}><Plus size={15} />Add to today's meals</Button><Button size="sm" variant="ghost" onClick={onRecheck}>Check again</Button></div>
     </div>
   );
